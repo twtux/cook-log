@@ -1,0 +1,85 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🔥 First Rotisserie — Time-Lapse</title><style>
+:root{--bg:#140f0c;--card:#1e1712;--ink:#f3ece4;--accent:#e0642a;--mut:#b7a793}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,system-ui,sans-serif}
+header{padding:22px 18px 12px;text-align:center}h1{margin:0;font-size:21px}.sub{color:var(--mut);font-size:13px;margin-top:5px}
+.bar{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+button{background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 18px;font-size:15px;font-weight:700}
+button.ghost{background:#2a211a;color:var(--ink);font-weight:600}
+main{max-width:560px;margin:0 auto;padding:8px 14px 60px}
+.card{margin:0 0 22px;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 6px 24px #0007;position:relative}
+.card img{width:100%;display:block}
+.time{position:absolute;top:10px;left:10px;background:#000a;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px}
+figcaption{padding:12px 14px 15px;font-size:15px;line-height:1.4}.count{color:var(--mut);font-size:12px;text-align:center;padding:2px 0 14px}
+#show{display:none;position:fixed;inset:0;background:#000;z-index:20;flex-direction:column;align-items:center;justify-content:center}
+#show.on{display:flex}
+.stage{position:relative;width:100%;flex:1;min-height:0;overflow:hidden}
+.stage img{position:absolute;inset:0;margin:auto;max-width:100%;max-height:100%;object-fit:contain;opacity:0;transition:opacity .35s ease}
+.stage img.vis{opacity:1;animation:kb 2.6s ease-out forwards}
+@keyframes kb{from{transform:scale(1.005)}to{transform:scale(1.055)}}
+#meta{padding:10px 20px 6px;text-align:center;max-width:600px;transition:opacity .35s ease}
+#meta .t{color:var(--accent);font-weight:800;font-size:15px;margin-bottom:3px}
+#meta .cap{color:#fff;font-size:16px;line-height:1.35}
+#show .x{position:absolute;top:12px;right:14px;font-size:24px;color:#fff;background:none;padding:6px 12px;z-index:3}
+#show .rep{position:absolute;bottom:18px;display:none;z-index:3}
+#bardot{position:absolute;bottom:8px;height:3px;background:var(--accent);left:0;transition:width .3s}
+</style></head><body>
+<header><h1>🔥 First Rotisserie — Time-Lapse</h1>
+<div class="sub">Whole chicken · Spider Huntsman + Venom · Fri Jul 24, 2026</div>
+<div class="bar"><button onclick="play()">▶ Play time-lapse</button><button class="ghost" onclick="document.getElementById('show').classList.remove('on')">▤ Scroll instead</button></div></header>
+<main><div class="count">30 frames · fire & grill setup first, then the cook</div>
+<figure class="card"><div class="time">3:51 PM</div>
+  <img loading="lazy" src="img/155156.jpg" alt="3:51 PM"><figcaption>🪵 Dumped the first coals — piled in the center (wrong for a rotisserie, had to fix it).</figcaption></figure><figure class="card"><div class="time">3:56 PM</div>
+  <img loading="lazy" src="img/155609.jpg" alt="3:56 PM"><figcaption>Raked them into a ring around the outer edge.</figcaption></figure><figure class="card"><div class="time">3:57 PM</div>
+  <img loading="lazy" src="img/155724.jpg" alt="3:57 PM"><figcaption>Cleared the center to make room for the drip pan.</figcaption></figure><figure class="card"><div class="time">3:59 PM</div>
+  <img loading="lazy" src="img/155907.jpg" alt="3:59 PM"><figcaption>Drip pan in the middle, two Jealous Devil starters set at 12 & 6 o'clock.</figcaption></figure><figure class="card"><div class="time">4:01 PM</div>
+  <img loading="lazy" src="img/160151.jpg" alt="4:01 PM"><figcaption>🔥 Lit it up — Venom controller running. Temp spikes to 205°… but that's just the starters flaring.</figcaption></figure><figure class="card"><div class="time">4:26 PM</div>
+  <img loading="lazy" src="img/162615.jpg" alt="4:26 PM"><figcaption>⚠️ And here's the trouble: starters flaming, but the charcoal won't catch. The fire fight begins.</figcaption></figure><figure class="card"><div class="time">4:07 PM</div>
+  <img loading="lazy" src="img/160710.jpg" alt="4:07 PM"><figcaption>Meanwhile, the star: the bird. 12-hr brine + 2 days air-drying for crispy skin.</figcaption></figure><figure class="card"><div class="time">4:15 PM</div>
+  <img loading="lazy" src="img/161543.jpg" alt="4:15 PM"><figcaption>Trussed it up — my first truss ever. 🏆</figcaption></figure><figure class="card"><div class="time">4:19 PM</div>
+  <img loading="lazy" src="img/161920.jpg" alt="4:19 PM"><figcaption>Onto the spit — forks locked, balanced to spin true.</figcaption></figure><figure class="card"><div class="time">5:36 PM</div>
+  <img loading="lazy" src="img/173609.jpg" alt="5:36 PM"><figcaption>…after a 90-minute fire fight + a relight, finally back to the bird. Herbes de Provence dusting.</figcaption></figure><figure class="card"><div class="time">5:40 PM</div>
+  <img loading="lazy" src="img/174031.jpg" alt="5:40 PM"><figcaption>Herbed and re-spitted — round two.</figcaption></figure><figure class="card"><div class="time">5:44 PM</div>
+  <img loading="lazy" src="img/174419.jpg" alt="5:44 PM"><figcaption>🐔 BIRD ON — 5:44 PM. Finally spinning over a real coal bed!</figcaption></figure><figure class="card"><div class="time">7:41 PM</div>
+  <img loading="lazy" src="img/194140.jpg" alt="7:41 PM"><figcaption>Two hours in — first temp check: 131°F. Hmm… stalled.</figcaption></figure><figure class="card"><div class="time">7:43 PM</div>
+  <img loading="lazy" src="img/194303.jpg" alt="7:43 PM"><figcaption>126°F — and the coals are dying on one side. Uh-oh.</figcaption></figure><figure class="card"><div class="time">8:07 PM</div>
+  <img loading="lazy" src="img/200701.jpg" alt="8:07 PM"><figcaption>8 PM: still stuck around 130°F. Gorgeous outside, cold inside — the dreaded stall.</figcaption></figure><figure class="card"><div class="time">8:08 PM</div>
+  <img loading="lazy" src="img/200827.jpg" alt="8:08 PM"><figcaption>The fix: raked fresh briquettes to the front by the fan and re-lit the fire.</figcaption></figure><figure class="card"><div class="time">8:11 PM</div>
+  <img loading="lazy" src="img/201145.jpg" alt="8:11 PM"><figcaption>Fresh coals caught — back up to 275°. We're cooking again.</figcaption></figure><figure class="card"><div class="time">8:33 PM</div>
+  <img loading="lazy" src="img/203338.jpg" alt="8:33 PM"><figcaption>Climbing at last — the fire's finally cooperating.</figcaption></figure><figure class="card"><div class="time">8:53 PM</div>
+  <img loading="lazy" src="img/205346.jpg" alt="8:53 PM"><figcaption>Breast at 150°F — grinding toward the finish.</figcaption></figure><figure class="card"><div class="time">8:54 PM</div>
+  <img loading="lazy" src="img/205402.jpg" alt="8:54 PM"><figcaption>Coals glowing hot now, real heat.</figcaption></figure><figure class="card"><div class="time">9:09 PM</div>
+  <img loading="lazy" src="img/210931.jpg" alt="9:09 PM"><figcaption>153.7°F… almost there.</figcaption></figure><figure class="card"><div class="time">9:10 PM</div>
+  <img loading="lazy" src="img/211001.jpg" alt="9:10 PM"><figcaption>157.5°F breast — thigh already at 180°.</figcaption></figure><figure class="card"><div class="time">9:20 PM</div>
+  <img loading="lazy" src="img/212031.jpg" alt="9:20 PM"><figcaption>158°F — safe and basically done after that long hold.</figcaption></figure><figure class="card"><div class="time">9:21 PM</div>
+  <img loading="lazy" src="img/212110.jpg" alt="9:21 PM"><figcaption>Deep golden, herb-flecked, smelling incredible.</figcaption></figure><figure class="card"><div class="time">9:28 PM</div>
+  <img loading="lazy" src="img/212853.jpg" alt="9:28 PM"><figcaption>160.3°F — the pull number, FINALLY. 🎯</figcaption></figure><figure class="card"><div class="time">9:29 PM</div>
+  <img loading="lazy" src="img/212908.jpg" alt="9:29 PM"><figcaption>Pulling her off the coals.</figcaption></figure><figure class="card"><div class="time">9:31 PM</div>
+  <img loading="lazy" src="img/213111.jpg" alt="9:31 PM"><figcaption>🏆 Off the spit — look at that bird.</figcaption></figure><figure class="card"><div class="time">9:32 PM</div>
+  <img loading="lazy" src="img/213221.jpg" alt="9:32 PM"><figcaption>Resting on the counter, skin glistening.</figcaption></figure><figure class="card"><div class="time">9:53 PM</div>
+  <img loading="lazy" src="img/215307.jpg" alt="9:53 PM"><figcaption>🏆 The payoff — golden, herby, crispy. Worth every minute of the fight.</figcaption></figure><figure class="card"><div class="time">9:59 PM</div>
+  <img loading="lazy" src="img/215919.jpg" alt="9:59 PM"><figcaption>The carve 🔪 — supposed to be 8 pieces… came out closer to 18. First-rotisserie tax. Still ate like a champ. 🐔</figcaption></figure><div class="count">🏆 First rotisserie, in the books.</div></main>
+<div id="show" onclick="tap(event)"><button class="x" onclick="stop(event)">✕</button>
+<div class="stage"><img id="a"><img id="b"></div>
+<div id="meta"><div class="t" id="st"></div><div class="cap" id="sc"></div></div>
+<button class="rep ghost" id="rep" onclick="play(event)">↻ Replay</button><div id="bardot"></div></div>
+<script>
+const frames=["155156", "155609", "155724", "155907", "160151", "162615", "160710", "161543", "161920", "173609", "174031", "174419", "194140", "194303", "200701", "200827", "201145", "203338", "205346", "205402", "210931", "211001", "212031", "212110", "212853", "212908", "213111", "213221", "215307", "215919"];const caps={"155156": "🪵 Dumped the first coals — piled in the center (wrong for a rotisserie, had to fix it).", "155609": "Raked them into a ring around the outer edge.", "155724": "Cleared the center to make room for the drip pan.", "155907": "Drip pan in the middle, two Jealous Devil starters set at 12 & 6 o'clock.", "160151": "🔥 Lit it up — Venom controller running. Temp spikes to 205°… but that's just the starters flaring.", "162615": "⚠️ And here's the trouble: starters flaming, but the charcoal won't catch. The fire fight begins.", "160710": "Meanwhile, the star: the bird. 12-hr brine + 2 days air-drying for crispy skin.", "161543": "Trussed it up — my first truss ever. 🏆", "161920": "Onto the spit — forks locked, balanced to spin true.", "173609": "…after a 90-minute fire fight + a relight, finally back to the bird. Herbes de Provence dusting.", "174031": "Herbed and re-spitted — round two.", "174419": "🐔 BIRD ON — 5:44 PM. Finally spinning over a real coal bed!", "194140": "Two hours in — first temp check: 131°F. Hmm… stalled.", "194303": "126°F — and the coals are dying on one side. Uh-oh.", "200701": "8 PM: still stuck around 130°F. Gorgeous outside, cold inside — the dreaded stall.", "200827": "The fix: raked fresh briquettes to the front by the fan and re-lit the fire.", "201145": "Fresh coals caught — back up to 275°. We're cooking again.", "203338": "Climbing at last — the fire's finally cooperating.", "205346": "Breast at 150°F — grinding toward the finish.", "205402": "Coals glowing hot now, real heat.", "210931": "153.7°F… almost there.", "211001": "157.5°F breast — thigh already at 180°.", "212031": "158°F — safe and basically done after that long hold.", "212110": "Deep golden, herb-flecked, smelling incredible.", "212853": "160.3°F — the pull number, FINALLY. 🎯", "212908": "Pulling her off the coals.", "213111": "🏆 Off the spit — look at that bird.", "213221": "Resting on the counter, skin glistening.", "215307": "🏆 The payoff — golden, herby, crispy. Worth every minute of the fight.", "215919": "The carve 🔪 — supposed to be 8 pieces… came out closer to 18. First-rotisserie tax. Still ate like a champ. 🐔"};
+function t12(ts){let h=+ts.slice(0,2),m=ts.slice(2,4),ap=h<12?'AM':'PM',hh=h%12||12;return hh+':'+m+' '+ap}
+frames.forEach(function(ts){var im=new Image();im.src='img/'+ts+'.jpg';});
+let i=0,timer=null,cur=0;
+const A=()=>document.getElementById('a'),B=()=>document.getElementById('b');
+function render(){
+  let ts=frames[i], showEl=cur?A():B(), hideEl=cur?B():A();
+  showEl.src='img/'+ts+'.jpg';
+  showEl.classList.remove('vis'); void showEl.offsetWidth; showEl.classList.add('vis'); hideEl.classList.remove('vis'); cur=cur?0:1;
+  const meta=document.getElementById('meta'); meta.style.opacity=0;
+  setTimeout(function(){document.getElementById('st').textContent=t12(ts);document.getElementById('sc').textContent=caps[ts]||'';meta.style.opacity=1;},200);
+  document.getElementById('bardot').style.width=((i+1)/frames.length*100)+'%';
+}
+function play(e){if(e)e.stopPropagation();i=0;cur=0;A().classList.remove('vis');B().classList.remove('vis');document.getElementById('rep').style.display='none';document.getElementById('show').classList.add('on');render();clearInterval(timer);timer=setInterval(adv,1900)}
+function adv(){if(i<frames.length-1){i++;render()}else{clearInterval(timer);document.getElementById('rep').style.display='block'}}
+function tap(e){if(e.target.classList.contains('x')||e.target.id==='rep')return;clearInterval(timer);if(i<frames.length-1){i++;render()}else{document.getElementById('rep').style.display='block'}}
+function stop(e){e.stopPropagation();clearInterval(timer);document.getElementById('show').classList.remove('on')}
+window.addEventListener('load',function(){setTimeout(function(){play()},500)});
+</script></body></html>

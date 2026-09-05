@@ -1,0 +1,16 @@
+{
+  "name": "Cook Log",
+  "short_name": "Cook Log",
+  "description": "A private, local-first BBQ cook journal.",
+  "id": "/cook-log/",
+  "start_url": "/cook-log/",
+  "scope": "/cook-log/",
+  "display": "standalone",
+  "background_color": "#1a1613",
+  "theme_color": "#1a1613",
+  "categories": ["food", "lifestyle", "utilities"],
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

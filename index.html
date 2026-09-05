@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1613">
+<meta name="description" content="A private, local-first BBQ cook journal that works offline.">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests">
+<meta http-equiv="Permissions-Policy" content="camera=(), geolocation=(), payment=(), usb=()">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cook Log">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>Cook Log</title>
+<style>
+  :root {
+    --ember: #c1440e;
+    --ember-bright: #e85d20;
+    --coal: #1a1613;
+    --smoke: #efe9df;
+    --ash: #8a8078;
+    --char: #2a2320;
+    --line: #3d342e;
+    --grate: #b7ab9c;
+    --good: #6fae5a;
+    --gold: #d9a441;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--coal); color: var(--smoke);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    line-height: 1.5; padding: 0 0 100px;
+  }
+  a { color: var(--ember-bright); }
+  header {
+    padding: 20px 16px 16px; border-bottom: 1px solid var(--line);
+    background: radial-gradient(120% 100% at 50% -20%, rgba(232,93,32,0.18), transparent 60%), var(--char);
+    position: sticky; top: 0; z-index: 20; backdrop-filter: blur(3px);
+  }
+  .bar { display: flex; align-items: center; gap: 12px; max-width: 860px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .brand .flame { font-size: 22px; }
+  .kicker { font-family: "SF Mono", ui-monospace, "Roboto Mono", monospace;
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--ember-bright); margin: 0; }
+  h1 { font-size: 21px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  .spacer { flex: 1; }
+  main { padding: 8px 16px 0; max-width: 860px; margin: 0 auto; }
+
+  button, .btn {
+    font-family: "SF Mono", ui-monospace, monospace; font-size: 13px;
+    border: 1px solid var(--line); background: var(--char); color: var(--smoke);
+    padding: 9px 14px; border-radius: 9px; cursor: pointer; letter-spacing: 0.02em;
+    transition: border-color .15s, background .15s; -webkit-appearance: none;
+  }
+  button:hover, .btn:hover { border-color: var(--ember); }
+  .btn-primary { background: var(--ember); border-color: var(--ember); color: #fff; font-weight: 600; }
+  .btn-primary:hover { background: var(--ember-bright); border-color: var(--ember-bright); }
+  .btn-ghost { background: transparent; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 7px; }
+  .btn-danger:hover { border-color: #b5442f; color: #ff9a80; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  /* list */
+  .toolbar { display: flex; gap: 10px; margin: 16px 0 8px; flex-wrap: wrap; }
+  .search { flex: 1; min-width: 160px; }
+  input, textarea, select {
+    width: 100%; background: rgba(255,255,255,0.02); color: var(--smoke);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    font-family: "SF Mono", ui-monospace, monospace; font-size: 14px;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--ember); }
+  textarea { min-height: 66px; resize: vertical; line-height: 1.45; }
+  label.fl { display: block; font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 0.06em; color: var(--ash); text-transform: uppercase; margin: 0 0 5px; }
+  .hint { color: var(--ash); font-size: 12px; font-family: "SF Mono", ui-monospace, monospace; }
+
+  .cook-card {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 12px 0;
+    background: rgba(255,255,255,0.015); cursor: pointer; transition: border-color .15s, transform .05s;
+  }
+  .cook-card:hover { border-color: var(--ember); }
+  .cook-card:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--ember-bright); outline-offset: 2px;
+  }
+  .cook-card:active { transform: scale(0.997); }
+  .cc-top { display: flex; align-items: baseline; gap: 10px; }
+  .cc-title { font-size: 18px; font-weight: 600; }
+  .cc-date { margin-left: auto; color: var(--ash); font-size: 12px; font-family: "SF Mono", ui-monospace, monospace; white-space: nowrap; }
+  .cc-meta { color: var(--grate); font-size: 13px; margin-top: 4px; font-family: "SF Mono", ui-monospace, monospace; }
+  .cc-del { background: transparent; border: none; color: var(--ash); font-size: 15px; padding: 2px 4px; margin-left: 10px; cursor: pointer; line-height: 1; }
+  .cc-del:hover { color: #ff9a80; border-color: transparent; }
+  .pill { display: inline-block; font-family: "SF Mono", ui-monospace, monospace; font-size: 10px;
+    letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: 20px;
+    border: 1px solid var(--line); color: var(--grate); margin-right: 6px; }
+  .pill.vs { color: var(--ember-bright); border-color: var(--ember); }
+  .scores { display: flex; gap: 14px; margin-top: 9px; }
+  .score { text-align: center; }
+  .score b { display: block; font-size: 19px; font-family: "SF Mono", ui-monospace, monospace; color: var(--gold); }
+  .score span { font-size: 10px; color: var(--ash); text-transform: uppercase; letter-spacing: 0.08em; font-family: "SF Mono", ui-monospace, monospace; }
+  .empty { text-align: center; color: var(--ash); padding: 60px 20px; }
+  .empty .flame { font-size: 40px; display: block; margin-bottom: 12px; }
+
+  /* form */
+  section.card { border: 1px solid var(--line); border-radius: 12px; margin: 16px 0; overflow: hidden; background: rgba(255,255,255,0.015); }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; padding: 12px 16px; background: var(--char); border-bottom: 1px solid var(--line); }
+  .sec-title { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--grate); font-weight: 600; font-family: "SF Mono", ui-monospace, monospace; }
+  .fields { padding: 12px 16px 16px; }
+  .fg { margin-bottom: 12px; }
+  .fg:last-child { margin-bottom: 0; }
+  .sides { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .sides.two { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 620px) { .sides.two { grid-template-columns: 1fr; } }
+  .side { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .side-head { padding: 9px 12px; background: rgba(193,68,14,0.10); border-bottom: 1px solid var(--line);
+    font-family: "SF Mono", ui-monospace, monospace; font-size: 12px; letter-spacing: 0.06em; color: var(--ember-bright); }
+  .side .fields { padding: 12px; }
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  input[type=range] { accent-color: var(--ember); padding: 0; }
+  .range-val { font-family: "SF Mono", ui-monospace, monospace; font-size: 15px; color: var(--gold); min-width: 34px; text-align: right; }
+
+  /* detail */
+  .detail-h { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 16px 0 4px; }
+  .detail-h h2 { margin: 0; font-size: 24px; }
+  .kv { display: grid; grid-template-columns: 150px 1fr; gap: 6px 14px; font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; padding: 12px 16px; }
+  .kv dt { color: var(--ash); }
+  .kv dd { margin: 0; color: var(--smoke); }
+  .cmp-table { width: 100%; border-collapse: collapse; font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; }
+  .cmp-table th, .cmp-table td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .cmp-table th { color: var(--ash); font-weight: 400; }
+  .cmp-table td.metric { color: var(--grate); white-space: nowrap; }
+  .cmp-table thead th { color: var(--ember-bright); }
+  .winner { color: var(--good); }
+  .foot-actions { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 16px; background: linear-gradient(transparent, var(--coal) 30%);
+    display: flex; gap: 10px; justify-content: center; z-index: 15; }
+  .foot-actions .inner { display: flex; gap: 10px; max-width: 860px; width: 100%; }
+  .toast { position: fixed; bottom: 78px; left: 50%; transform: translateX(-50%); background: var(--char);
+    border: 1px solid var(--ember); color: var(--smoke); padding: 10px 16px; border-radius: 10px;
+    font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 30; }
+  .toast.show { opacity: 1; }
+  .notice { border: 1px solid var(--line); border-radius: 10px; padding: 11px 13px; margin: 12px 0;
+    background: rgba(217,164,65,0.07); color: var(--grate); font-family: "SF Mono", ui-monospace, monospace; font-size: 12px; }
+  .notice b { color: var(--gold); }
+  .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 40; padding: 20px; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--char); border: 1px solid var(--line); border-radius: 14px; max-width: 560px; width: 100%; padding: 20px; max-height: 84vh; overflow: auto; }
+  .modal h3 { margin: 0 0 12px; }
+  pre.md { white-space: pre-wrap; word-break: break-word; background: var(--coal); border: 1px solid var(--line);
+    border-radius: 8px; padding: 12px; font-family: "SF Mono", ui-monospace, monospace; font-size: 12px; color: var(--grate); line-height: 1.5; }
+  .timeline { list-style: none; margin: 12px 0 0; padding: 0; }
+  .timeline li { padding: 9px 0; border-bottom: 1px solid rgba(61,52,46,0.5); font-family: "SF Mono", ui-monospace, monospace; font-size: 14px; }
+  .timeline li:last-child { border-bottom: none; }
+  .timeline .t { color: var(--gold); margin-right: 10px; }
+  .sidebtn.on { border-color: var(--ember); color: var(--ember-bright); background: rgba(193,68,14,0.12); }
+  .quickbtn { font-size: 14px !important; padding: 11px 15px !important; }
+  /* wizard */
+  .wizard { max-width: 560px; margin: 0 auto; padding-top: 6px; }
+  .wiz-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; min-height: 30px; }
+  .wiz-step { font-family: "SF Mono", ui-monospace, monospace; font-size: 11px; color: var(--ash); letter-spacing: 0.12em; text-transform: uppercase; }
+  .wiz-q { font-size: 25px; font-weight: 600; line-height: 1.2; margin: 6px 0 6px; letter-spacing: -0.01em; }
+  .wiz-sub { color: var(--ash); font-size: 14px; font-family: "SF Mono", ui-monospace, monospace; margin-bottom: 18px; line-height: 1.5; }
+  .wiz-input { font-size: 17px; padding: 14px; }
+  textarea.wiz-input { min-height: 96px; }
+  .wiz-choices { display: grid; gap: 12px; margin-top: 8px; }
+  .wiz-choice { text-align: left; padding: 18px; border-radius: 12px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; cursor: pointer; }
+  .wiz-choice b { font-size: 18px; }
+  .wiz-choice span { font-size: 13px; color: var(--ash); font-family: "SF Mono", ui-monospace, monospace; }
+  .wiz-choice.on { border-color: var(--ember); background: rgba(193,68,14,0.10); }
+  .idea-card { border: 1px solid var(--ember); background: rgba(193,68,14,0.10); border-radius: 12px;
+    padding: 14px 16px; margin: 12px 0 16px; }
+  .idea-card b { color: var(--gold); }
+  .idea-card p { margin: 5px 0 0; color: var(--grate); font-family: "SF Mono", ui-monospace, monospace; font-size: 13px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border-radius: 20px; padding: 10px 15px; font-size: 14px; }
+  .chip.on { border-color: var(--ember); background: rgba(193,68,14,0.14); color: var(--ember-bright); }
+  .wiz-nav { display: flex; gap: 10px; margin-top: 24px; }
+  .wiz-nav .btn-primary { flex: 1; }
+  /* voice */
+  .field-row { display: flex; gap: 8px; align-items: stretch; }
+  .field-row > input, .field-row > textarea { flex: 1; }
+  .mic { padding: 0 15px; font-size: 17px; border-radius: 9px; white-space: nowrap; }
+  .mic.listening { border-color: var(--ember); background: rgba(193,68,14,0.18); color: var(--ember-bright); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  /* ambient smoker + smoke background (original art, no branded assets) */
+  .smokebg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  main { position: relative; z-index: 1; }
+  .pit { position: absolute; right: -20px; bottom: -14px; width: 420px; height: 340px; }
+  .pit svg { position: absolute; right: 0; bottom: 0; width: 420px; height: auto; color: #000; opacity: 0.16; }
+  .smoke { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(212,206,196,0.55), rgba(212,206,196,0) 70%); filter: blur(7px); opacity: 0; }
+  .smoke.a { right: 100px; bottom: 212px; width: 46px; height: 46px; animation: rise 7s ease-in infinite; }
+  .smoke.b { right: 108px; bottom: 210px; width: 34px; height: 34px; animation: rise 9s ease-in infinite 2.4s; }
+  .smoke.c { right: 92px; bottom: 208px; width: 58px; height: 58px; animation: rise 8s ease-in infinite 4.6s; }
+  @keyframes rise { 0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; } 12% { opacity: 0.5; } 55% { opacity: 0.3; } 100% { transform: translateY(-210px) translateX(-26px) scale(1.7); opacity: 0; } }
+  @media (max-width: 520px) { .pit { width: 300px; height: 250px; right: -28px; } .pit svg { width: 300px; } .smoke.a { right: 72px; bottom: 150px; } .smoke.b { right: 78px; bottom: 149px; } .smoke.c { right: 66px; bottom: 148px; } }
+  @media (prefers-reduced-motion: reduce) { .smoke { animation: none !important; opacity: 0.16; } }
+</style>
+</head>
+<body>
+<div class="smokebg" aria-hidden="true">
+  <div class="pit">
+    <svg viewBox="0 0 400 300" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+      <rect x="120" y="235" width="14" height="60" rx="5"/>
+      <rect x="250" y="235" width="14" height="60" rx="5"/>
+      <circle cx="127" cy="298" r="15"/>
+      <circle cx="257" cy="298" r="15"/>
+      <rect x="34" y="180" width="70" height="70" rx="10"/>
+      <rect x="30" y="205" width="12" height="24" rx="4"/>
+      <rect x="90" y="150" width="230" height="95" rx="47"/>
+      <rect x="180" y="136" width="46" height="12" rx="6"/>
+      <rect x="286" y="88" width="28" height="66" rx="5"/>
+      <rect x="280" y="82" width="40" height="10" rx="5"/>
+    </svg>
+    <span class="smoke a"></span><span class="smoke b"></span><span class="smoke c"></span>
+  </div>
+</div>
+<header>
+  <div class="bar">
+    <div class="brand" onclick="go('/')">
+      <span class="flame">🔥</span>
+      <div><p class="kicker">Tom Wood · BBQ</p><h1>Cook Log</h1></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn-sm btn-ghost" onclick="go('/clock')">🕒 Clock</button>
+    <button class="btn-sm btn-ghost" onclick="go('/inventory')">Inventory</button>
+    <button class="btn-sm btn-ghost" id="installBtn" onclick="installApp()">Install</button>
+    <button class="btn-sm btn-ghost" onclick="openData()">Data</button>
+  </div>
+</header>
+<main id="app"></main>
+<div class="toast" id="toast"></div>
+
+<div class="modal-bg" id="modalbg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="-1"></div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Cook Log — single-file, offline BBQ cook tracker. Data lives in localStorage.
+   Unified model: every cook has 1+ "sides" (1 = single cook, 2 = head-to-head),
+   so comparison is first-class. Exports markdown (paste into cook-log.md) + JSON
+   (full backup). No build, no server, no deps — drops onto any static host.
+--------------------------------------------------------------------------- */
+const KEY = 'cooklog.v1';
+const LAST_BACKUP_KEY='cooklog.last-backup.v1';
+const RECOVERY_KEY='cooklog.recovery.v1';
+const IDB_NAME='cook-log-device-store';
+const IDB_STORE='snapshots';
+const COOKERS = ['Spider Huntsman', 'Traeger 565', 'Weber kettle'];
+const QUICK_EVENTS = ['Fire lit', 'Meat on', 'Stall', 'Wrapped', 'Probe check', 'Spritz', 'Pulled', 'Rested'];
+let evtSide = 'Both';
+let wiz = null;
+
+// Per-side fields, grouped. score:true renders a 1-10 slider.
+const SIDE_GROUPS = [
+  { title: 'The Fire', fields: [
+    { k:'fuel', label:'Fuel', ph:'lump / briquette / pellet — brand' },
+    { k:'wood', label:'Wood', ph:'species + chunks vs pellets, how many' },
+    { k:'config', label:'Config', ph:'two-zone / deflectors / rotisserie' },
+    { k:'targetTemp', label:'Target grate temp', ph:'e.g. 250°F' },
+    { k:'tempHeld', label:'Temp actually held', ph:'steady? did it swing?' },
+    { k:'thermometer', label:'Thermometer of record', ph:'Tel-Tru / Venom probe / dome' },
+    { k:'smokeQuality', label:'Smoke before meat on', ph:'thin blue? white billow? cleanup time' },
+  ]},
+  { title: 'The Timeline', fields: [
+    { k:'weightStart', label:'Start weight', ph:'e.g. 14 lb' },
+    { k:'onGrate', label:'On the grate (time)', ph:'e.g. 6:10 AM' },
+    { k:'stall', label:'Stall — start / temp', ph:'e.g. 9:40, 152°F' },
+    { k:'wrapped', label:'Wrapped? (when / in what)', ph:'butcher paper at 165°' },
+    { k:'hitTarget', label:'Hit target internal at', ph:'time' },
+    { k:'totalTime', label:'Total cook time', ph:'e.g. 8h 20m' },
+    { k:'pulledTemp', label:'Pulled at internal temp', ph:'e.g. 203°F' },
+    { k:'probeFeel', label:'Probe feel at pull', ph:'slid like butter? resistance?' },
+    { k:'rest', label:'Rest — how long / where', ph:'2h in a cooler' },
+  ]},
+  { title: 'The Result', fields: [
+    { k:'smokeRing', label:'Smoke ring depth', ph:'e.g. 1/4 inch' },
+    { k:'bark', label:'Bark', ph:'set? soft? color' },
+    { k:'sauce', label:'Sauce / finish', ph:'if any' },
+    { k:'smokeScore', label:'Smoke intensity', score:true },
+    { k:'moistureScore', label:'Moisture / tenderness', score:true },
+    { k:'tasteScore', label:'Overall taste', score:true },
+  ]},
+];
+
+// ---- storage ----
+function load() {
+  try {
+    const raw=JSON.parse(localStorage.getItem(KEY));
+    if(!raw||!Array.isArray(raw.cooks)) return { cooks: [] };
+    const seen=new Set();
+    return { cooks:raw.cooks.map(c=>normalizeCook(c,seen)).filter(Boolean) };
+  } catch { return { cooks: [] }; }
+}
+function save(db) {
+  try { localStorage.setItem(KEY,JSON.stringify(db)); mirrorDeviceData(); return true; }
+  catch { toast('Could not save — browser storage may be full'); return false; }
+}
+function uid() { return 'c' + Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4); }
+function nowLocal(){ const n=new Date(), p=x=>String(x).padStart(2,'0'); return `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`; }
+function getCook(id) { return load().cooks.find(c => c.id === id); }
+
+function textVal(v,max=10000){ return typeof v==='string'?v.slice(0,max):(v==null?'':String(v).slice(0,max)); }
+function normalizeSide(raw){
+  const s=newSide(textVal(raw&&raw.name,200));
+  SIDE_GROUPS.forEach(g=>g.fields.forEach(f=>{
+    const v=raw&&raw[f.k];
+    s[f.k]=f.score?Math.max(0,Math.min(10,Number(v)||0)):textVal(v);
+  }));
+  return s;
+}
+function normalizeCook(raw,seen=new Set()){
+  if(!raw||typeof raw!=='object'||!Array.isArray(raw.sides)||!raw.sides.length) return null;
+  let id=textVal(raw.id,80);
+  if(!/^[A-Za-z0-9_-]+$/.test(id)||seen.has(id)) id=uid();
+  seen.add(id);
+  const sides=raw.sides.slice(0,2).map(normalizeSide);
+  const events=Array.isArray(raw.events)?raw.events.slice(0,5000).map(e=>({
+    t:Number.isFinite(Number(e&&e.t))?Number(e.t):Date.now(),
+    label:textVal(e&&e.label,1000), side:textVal(e&&e.side,200)
+  })).filter(e=>e.label):[];
+  return {
+    id, createdAt:Number(raw.createdAt)||Date.now(), updatedAt:Number(raw.updatedAt)||Date.now(),
+    mode:sides.length>1?'compare':'single', title:textVal(raw.title), date:textVal(raw.date,50),
+    protein:textVal(raw.protein), plan:textVal(raw.plan), prep:textVal(raw.prep),
+    sidesPlan:textVal(raw.sidesPlan), saucePlan:textVal(raw.saucePlan), events, sides,
+    worked:textVal(raw.worked), change:textVal(raw.change), notes:textVal(raw.notes), verdict:textVal(raw.verdict),
+    experience:Array.isArray(raw.experience)?raw.experience.slice(0,25).map(x=>textVal(x,40)).filter(Boolean):[],
+    source:textVal(raw.source,40),
+    steps:Array.isArray(raw.steps)?raw.steps.slice(0,60).map(s=>textVal(s,500)).filter(Boolean):[],
+    stepsDone:Array.isArray(raw.stepsDone)?raw.stepsDone.filter(n=>Number.isInteger(n)):[]
+  };
+}
+
+// ---- learned suggestions (your "inventory" from past cooks) ----
+function distinct(arr){ return [...new Set(arr.map(v=>v==null?'':String(v).trim()).filter(Boolean))]; }
+function pastCookers(){ return distinct([...loadInv().cookers, ...load().cooks.flatMap(c=>c.sides.map(s=>s.name))]); }
+function pastProteins(){ return distinct(load().cooks.map(c=>c.protein)); }
+function pastSide(k){ const inv=loadInv(); const extra=k==='fuel'?inv.fuels:k==='wood'?inv.woods:[]; return distinct([...(extra||[]), ...load().cooks.flatMap(c=>c.sides.map(s=>s[k]))]); }
+function pickInto(id,val){ const el=document.getElementById(id); if(el){ el.value=val; el.focus(); } }
+function wizSetCookerIdx(i,ci){ wizSetCooker(i, pastCookers()[ci]); }
+function dataLists(){
+  let out=`<datalist id="cookers">${pastCookers().map(c=>`<option value="${esc(c)}">`).join('')}</datalist>`;
+  out+=`<datalist id="dl_protein">${pastProteins().map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`;
+  SIDE_GROUPS.forEach(g=>g.fields.forEach(f=>{ if(!f.score) out+=`<datalist id="dl_${f.k}">${pastSide(f.k).map(v=>`<option value="${esc(v)}">`).join('')}</datalist>`; }));
+  return out;
+}
+
+// ---- inventory (your grills, rubs, woods, fuels — editable; drives multiple-choice) ----
+const INV_KEY='cooklog.inv.v1';
+const HERBES_MIGRATION_KEY='cooklog.inv.herbes-de-provence.v1';
+const INV_DEFAULTS={
+  cookers: COOKERS.slice(),
+  rubs: ['Badia Herbes de Provence (salt-free)','SPG (salt/pepper/garlic)','Kosmos Cow Cover','Meat Church Holy Cow','Killer Hogs BBQ Rub'],
+  woods: ['Post oak','Hickory','Pecan','Cherry','Apple','Mesquite'],
+  fuels: ['Lump charcoal','Briquettes','Traeger pellets'],
+  techniques: ['Dry brine overnight','Trimmed','Injected','Binder + rub','SPG only','Spritzed'],
+  mealSides: ['Smoked mac & cheese','Vinegar slaw','Pit beans','Jalapeño cornbread','Mustard potato salad','Grilled corn','Smoked potatoes','Grilled vegetables'],
+  mealSauces: ['Kansas City BBQ sauce','Carolina vinegar sauce','Alabama white sauce','Mustard BBQ sauce','Hot honey BBQ glaze','Chimichurri']
+};
+const INV_CATS=[['cookers','Grills / cookers'],['rubs','Rubs & spices'],['woods','Woods'],['fuels','Fuels'],['techniques','Prep techniques'],['mealSides','Meal sides'],['mealSauces','Meal sauces']];
+function loadInv(){
+  try{
+    const v=JSON.parse(localStorage.getItem(INV_KEY));
+    if(v&&v.cookers){
+      const inv=Object.assign({}, INV_DEFAULTS, v);
+      if(!localStorage.getItem(HERBES_MIGRATION_KEY)){
+        inv.rubs=distinct(['Badia Herbes de Provence (salt-free)',...(inv.rubs||[])]);
+        localStorage.setItem(INV_KEY,JSON.stringify(inv));
+        localStorage.setItem(HERBES_MIGRATION_KEY,'1');
+      }
+      return inv;
+    }
+  }catch{}
+  return JSON.parse(JSON.stringify(INV_DEFAULTS));
+}
+function saveInv(inv){ try{ localStorage.setItem(INV_KEY, JSON.stringify(inv)); mirrorDeviceData(); return true; }catch{ toast('Could not save inventory — browser storage may be full'); return false; } }
+function addInvItem(cat){ const el=document.getElementById('inv_'+cat); const v=(el&&el.value||'').trim(); if(!v)return; const inv=loadInv(); if(!inv[cat])inv[cat]=[]; if(!inv[cat].includes(v))inv[cat].push(v); saveInv(inv); renderInventory(document.getElementById('app')); }
+function removeInvItem(cat,idx){ const inv=loadInv(); inv[cat].splice(idx,1); saveInv(inv); renderInventory(document.getElementById('app')); }
+function prepOptions(){ const inv=loadInv(); return [...(inv.techniques||[]), ...(inv.rubs||[])]; }
+function renderInventory(app){
+  const inv=loadInv();
+  app.innerHTML=`<div class="detail-h"><h2>Your inventory</h2></div>
+    <div class="cc-meta" style="margin-bottom:10px">Your grills, ingredients, sides &amp; sauces — these become tap-to-pick choices when you log a cook.</div>
+    ${INV_CATS.map(([cat,label])=>`<section class="card"><div class="sec-head"><span class="sec-title">${label}</span></div>
+      <div class="fields">
+        <div class="chips">${(inv[cat]||[]).map((it,idx)=>`<span class="chip on" style="display:inline-flex;gap:8px;align-items:center">${esc(it)}<button class="btn-sm btn-ghost" style="padding:0 5px" onclick="removeInvItem('${cat}',${idx})">✕</button></span>`).join('')||'<span class="hint">nothing yet</span>'}</div>
+        <div class="row" style="margin-top:10px"><input id="inv_${cat}" placeholder="add…" style="flex:1" onkeydown="if(event.key==='Enter')addInvItem('${cat}')">${supportsSpeech()?`<button class="mic" onclick="dictate(t=>{var el=document.getElementById('inv_${cat}');el.value=t;addInvItem('${cat}')},this)">🎤</button>`:''}<button onclick="addInvItem('${cat}')">Add</button></div>
+      </div></section>`).join('')}
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner"><button class="btn-primary" style="flex:1" onclick="go('/')">Done</button></div></div>`;
+}
+
+// ---- first-run onboarding (a quick interview to set up your gear) ----
+const ONB_KEY='cooklog.onboarded';
+const ONB_PALETTE={
+  cookers:['Weber kettle','Traeger 565','Spider Huntsman','Big Green Egg','Kamado Joe','Pit Boss','Offset smoker','Weber Smokey Mountain','Gas grill'],
+  rubs:['SPG (salt/pepper/garlic)','Kosmos Cow Cover','Meat Church Holy Cow','Meat Church Holy Gospel','Killer Hogs BBQ Rub','Brown sugar rub'],
+  woods:['Post oak','Hickory','Pecan','Cherry','Apple','Mesquite','Oak','Maple'],
+  fuels:['Lump charcoal','Briquettes','Kingsford','Traeger pellets','Competition pellets']
+};
+const ONB_STEPS=[['cookers','What do you cook on?','Your grills & smokers'],['rubs','Rubs & spices you reach for','Your regulars'],['woods','What woods do you burn?','For smoke'],['fuels','Fuel?','Charcoal, pellets…']];
+let onb=null;
+function firstRun(){ return !localStorage.getItem(ONB_KEY) && load().cooks.length===0; }
+function startOnboard(){ onb={ step:0, palette:JSON.parse(JSON.stringify(ONB_PALETTE)), picks:{} }; ONB_STEPS.forEach(([cat])=>onb.picks[cat]=[]); go('/welcome'); }
+function skipOnboard(){ localStorage.setItem(ONB_KEY,'1'); onb=null; go('/'); }
+function onbToggle(cat,idx){ const v=onb.palette[cat][idx]; const i=onb.picks[cat].indexOf(v); if(i<0)onb.picks[cat].push(v); else onb.picks[cat].splice(i,1); renderWelcome(document.getElementById('app')); }
+function onbAdd(cat){ const el=document.getElementById('onb_'+cat); const v=(el&&el.value||'').trim(); if(!v)return; if(!onb.palette[cat].includes(v))onb.palette[cat].push(v); if(!onb.picks[cat].includes(v))onb.picks[cat].push(v); renderWelcome(document.getElementById('app')); }
+function onbNext(){ if(onb.step<ONB_STEPS.length-1){ onb.step++; renderWelcome(document.getElementById('app')); } else { finishOnboard(); } }
+function onbBack(){ onb.step--; renderWelcome(document.getElementById('app')); }
+function finishOnboard(){ const inv=loadInv(); ONB_STEPS.forEach(([cat])=>{ if(onb.picks[cat].length) inv[cat]=distinct(onb.picks[cat]); }); saveInv(inv); localStorage.setItem(ONB_KEY,'1'); onb=null; toast('Pit set up 🔥'); go('/start'); }
+function renderWelcome(app){
+  if(!onb || onb.step<0){
+    app.innerHTML=`<div class="wizard">
+      <div class="wiz-q" style="margin-top:18px">Welcome to Cook Log 🔥</div>
+      <div class="wiz-sub">A dead-simple way to remember your cooks — and settle "which grill did it better." Let's set up your gear first, so logging is all tap-to-pick. Takes a minute.</div>
+      <div class="wiz-choices">
+        <button class="wiz-choice on" onclick="startOnboard()"><b>Set up my gear →</b><span>Grills, rubs, woods, fuels</span></button>
+        <button class="wiz-choice" onclick="skipOnboard()"><b>Skip for now</b><span>Use defaults, tweak later in Inventory</span></button>
+      </div></div>`;
+    return;
+  }
+  const [cat,q,sub]=ONB_STEPS[onb.step];
+  const pal=onb.palette[cat], picks=onb.picks[cat];
+  app.innerHTML=`<div class="wizard">
+    <div class="wiz-top"><button class="btn-ghost btn-sm" onclick="skipOnboard()">Skip setup</button><span class="wiz-step">Gear ${onb.step+1} of ${ONB_STEPS.length}</span></div>
+    <div class="wiz-q">${q}</div><div class="wiz-sub">${sub} — tap all you've got, or add your own</div>
+    <div class="chips">${pal.map((it,idx)=>`<button class="chip${picks.includes(it)?' on':''}" onclick="onbToggle('${cat}',${idx})">${esc(it)}</button>`).join('')}</div>
+    <div class="row" style="margin-top:12px"><input id="onb_${cat}" placeholder="add your own…" style="flex:1" onkeydown="if(event.key==='Enter')onbAdd('${cat}')">${supportsSpeech()?`<button class="mic" onclick="dictate(t=>{var el=document.getElementById('onb_${cat}');el.value=t;onbAdd('${cat}')},this)">🎤</button>`:''}<button onclick="onbAdd('${cat}')">Add</button></div>
+    <div class="wiz-nav"><button class="btn-ghost" onclick="onbBack()">← Back</button><button class="btn-primary" onclick="onbNext()">${onb.step<ONB_STEPS.length-1?'Next →':'Done 🔥'}</button></div>
+  </div>`;
+}
+
+function newSide(name) {
+  const s = { name: name || '' };
+  SIDE_GROUPS.forEach(g => g.fields.forEach(f => { s[f.k] = f.score ? 0 : ''; }));
+  return s;
+}
+// Overall-experience quick descriptors (tap all that fit) — good outcomes + common issues.
+const EXPERIENCE_TAGS = ['Perfect','Juicy','Tender','Great smoke','Good bark','Well-seasoned','Crispy skin',
+  'Salty','Bland','Dry','Tough','Chewy','Overcooked','Undercooked','No smoke','Too smoky','Greasy','Rushed'];
+function blankCook(mode) {
+  return {
+    id: uid(), createdAt: Date.now(), updatedAt: Date.now(), mode,
+    title: '', date: '', protein: '', plan: '', prep: '', sidesPlan: '', saucePlan: '', events: [],
+    sides: mode === 'compare' ? [newSide(COOKERS[0]), newSide(COOKERS[1])] : [newSide('')],
+    worked: '', change: '', notes: '', verdict: '', experience: [],
+  };
+}
+
+// ---- helpers ----
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function jsArg(v){ return esc(JSON.stringify(String(v==null?'':v))); }
+function mdCell(v){ return String(v==null?'':v).replace(/\\/g,'\\\\').replace(/\|/g,'\\|').replace(/\r?\n/g,'<br>'); }
+function fmtDate(v) {
+  if (!v) return '—';
+  const d = new Date(v); if (isNaN(d)) return v;
+  return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) +
+    ' · ' + d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit' });
+}
+function avgScore(side) {
+  const s = [side.smokeScore, side.moistureScore, side.tasteScore].map(Number).filter(n => n > 0);
+  return s.length ? (s.reduce((a,b)=>a+b,0)/s.length) : 0;
+}
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 1900); }
+
+// ---- routing ----
+function go(path) { const h = '#' + path; if (location.hash === h) render(); else location.hash = h; }
+window.addEventListener('hashchange', render);
+window.addEventListener('load',()=>initDeviceStorage().finally(render));
+
+function render() {
+  const h = location.hash.slice(1) || '/';
+  const app = document.getElementById('app');
+  if (h === '/') { if(firstRun() && !forkcastHandoff()) return renderWelcome(app); return renderList(app); }
+  if (h === '/welcome') return renderWelcome(app);
+  if (h === '/inventory') return renderInventory(app);
+  if (h === '/clock') return renderClock(app);
+  if (h === '/start') return renderWizard(app);
+  if (h === '/new/single') return renderForm(app, blankCook('single'), true);
+  if (h === '/new/compare') return renderForm(app, blankCook('compare'), true);
+  const mE = h.match(/^\/edit\/(.+)$/); if (mE) { const c = getCook(mE[1]); return c ? renderForm(app, c, false) : renderList(app); }
+  const mD = h.match(/^\/cook\/(.+)$/); if (mD) { const c = getCook(mD[1]); return c ? renderDetail(app, c) : renderList(app); }
+  if (h === '/recipes') return renderRecipes(app);
+  if (h === '/recipe-new') return renderRecipeForm(app, blankRecipe(), true);
+  const mRE = h.match(/^\/recipe-edit\/(.+)$/); if (mRE) { const r = getRecipe(mRE[1]); return r && !r.builtin ? renderRecipeForm(app, r, false) : renderRecipes(app); }
+  const mR = h.match(/^\/recipe\/(.+)$/); if (mR) { const r = getRecipe(mR[1]); return r ? renderRecipeDetail(app, r) : renderRecipes(app); }
+  renderList(app);
+}
+
+// ---- recipes (a reusable pit playbook — seeded classics + your own saved cooks) ----
+const REC_KEY = 'cooklog.recipes.v1';
+const BUILTIN_RECIPES = [
+  { id:'b_brisket', builtin:true, name:'Packer Brisket', protein:'Whole packer brisket', cooker:'Offset / pellet smoker', targetTemp:'250°F', pullTemp:'203°F', estTime:'~12 hrs', wood:'Post oak', sides:'Smoked mac & cheese · vinegar slaw', sauce:'Kansas City BBQ sauce',
+    plan:'Low & slow at 250°F, wrap in butcher paper through the stall, pull when it probes like butter.', source:'Pit classic',
+    steps:['Trim the fat cap to ~1/4 inch; square off the edges.','Season heavy with SPG (or a beef rub); let it tack up ~30 min.','Smoke fat-side up at 250°F, thin blue smoke.','Ride the stall (~150–170°F); wrap in butcher paper once the bark is set.','Pull at ~203°F when the probe slides in with no resistance.','Rest wrapped in a cooler at least 1 hr (2 is better) before slicing against the grain.'] },
+  { id:'b_ribs', builtin:true, name:'St. Louis Ribs', protein:'St. Louis–cut pork ribs', cooker:'Any smoker', targetTemp:'275°F', pullTemp:'bend test', estTime:'~5 hrs', wood:'Hickory + cherry', sides:'Pit beans · jalapeño cornbread', sauce:'Apple-bourbon BBQ glaze',
+    plan:'275°F unwrapped until the bark sets, glaze lightly near the finish.', source:'Pit classic',
+    steps:['Pull the membrane off the bone side.','Light binder + rub both sides.','Smoke meat-side up at 275°F.','Optional wrap with butter/brown sugar ~2.5 hr mark for tenderness.','Glaze in the last 20–30 min so it sets, not burns.','Done when they pass the bend test / ~2 bones tear clean.'] },
+  { id:'b_shoulder', builtin:true, name:'Pulled Pork Shoulder', protein:'Bone-in pork shoulder (Boston butt)', cooker:'Any smoker', targetTemp:'250°F', pullTemp:'203°F', estTime:'~10 hrs', wood:'Hickory', sides:'Carolina slaw · skillet cornbread', sauce:'Carolina vinegar sauce',
+    plan:'250°F, wrap after the bark sets, pull when probe-tender, rest, then shred.', source:'Pit classic',
+    steps:['Trim loose fat; leave the cap.','Binder + a sweet-and-savory rub.','Smoke at 250°F to an internal ~165°F.','Wrap in foil (splash of juice) once the bark is where you want it.','Pull at ~203°F when the bone wiggles free.','Rest 1 hr, then shred and dress lightly.'] },
+  { id:'b_chicken', builtin:true, name:'Smoked Chicken Thighs', protein:'Bone-in chicken thighs', cooker:'Any grill/smoker', targetTemp:'325°F', pullTemp:'180°F', estTime:'~1.5 hrs', wood:'Cherry', sides:'Grilled corn · mustard potato salad', sauce:'Alabama white sauce',
+    plan:'325°F for bite-through skin; finish at 180–185°F in the thigh.', source:'Pit classic',
+    steps:['Trim excess skin/fat; pat dry for crisp skin.','Season under and over the skin.','Cook at 325°F (higher heat = better skin).','Pull at 180–185°F — thighs are forgiving; a little over is fine.','Dunk or drizzle Alabama white sauce at the end.'] },
+  { id:'b_tritip', builtin:true, name:'Reverse-Seared Tri-Tip', protein:'Tri-tip roast', cooker:'Smoker + hot grill', targetTemp:'225°F then sear', pullTemp:'120°F then sear to 130°F', estTime:'~1.5 hrs', wood:'Oak', sides:'Smoked potatoes · grilled asparagus', sauce:'Chimichurri',
+    plan:'Smoke at 225°F to 115–120°F, then sear hot & fast to a medium-rare finish.', source:'Pit classic',
+    steps:['Season with SPG; rest at room temp ~45 min.','Smoke at 225°F to 115–120°F internal.','Rest while you crank the grill screaming hot.','Sear 2–3 min/side to a crust, ~130°F for medium-rare.','Slice against the grain (mind the grain change in a tri-tip).'] },
+  { id:'b_shortrib', builtin:true, name:'Beef Plate Short Ribs', protein:'Beef plate short ribs', cooker:'Any smoker', targetTemp:'275°F', pullTemp:'203°F', estTime:'~8 hrs', wood:'Post oak', sides:'Creamy polenta · charred broccolini', sauce:'Red-wine barbecue jus',
+    plan:'275°F until deeply barked and probe-tender; long rest.', source:'Pit classic',
+    steps:['Trim silver skin off the top; leave the fat.','Heavy SPG or beef rub.','Smoke at 275°F, no wrap needed on plate ribs.','Pull at ~203°F when jiggly and probe-tender.','Rest 45+ min — these hold a ton of heat.'] },
+  { id:'b_burntends', builtin:true, name:'Pork Belly Burnt Ends', protein:'Pork belly (cubed)', cooker:'Any smoker', targetTemp:'250°F', pullTemp:'tender + tacky', estTime:'~5 hrs', wood:'Apple', sides:'Sesame slaw · smoked baked beans', sauce:'Hot honey BBQ glaze',
+    plan:'Smoke the cubes, pan with glaze once the bark sets, cook until tender and tacky.', source:'Pit classic',
+    steps:['Cube the belly into ~1.5 inch pieces; season all sides.','Smoke at 250°F until bark sets (~2.5 hr).','Pan them with butter, brown sugar and honey; cover.','Back on until tender, then uncover and glaze to tacky.','Toss and serve — candy-meat territory.'] },
+  { id:'b_turkey', builtin:true, name:'Smoked Turkey Breast', protein:'Turkey breast', cooker:'Any smoker', targetTemp:'275°F', pullTemp:'160°F', estTime:'~3 hrs', wood:'Pecan + apple', sides:'Sage stuffing muffins · smoked green beans', sauce:'Cranberry-chipotle BBQ sauce',
+    plan:'275°F with a butter wrap near 140°F; pull ~160°F and rest before slicing.', source:'Pit classic',
+    steps:['Brine or dry-brine overnight for juicy meat.','Season; smoke at 275°F.','Butter-baste or wrap near 140°F to protect the breast.','Pull at ~160°F (carryover finishes it to 165°F).','Rest 20 min, slice against the grain.'] },
+  { id:'b_rotiss', builtin:true, name:'Rotisserie Chicken (salt-free rub)', protein:'Whole chicken', cooker:'Rotisserie', targetTemp:'~375°F', pullTemp:'165°F breast / 175°F thigh', estTime:'~1.5 hrs', wood:'—', sides:'Grilled vegetables · potatoes', sauce:'Pan drippings',
+    plan:'Overnight brine, dry the skin, light oil + Herbes de Provence (NO salt — brine handled it), spin at ~375°F.', source:'Your proven cook',
+    steps:['Brine the whole bird 8–12 hrs; discard brine, do NOT rinse.','Pat bone-dry; ideally air-dry uncovered in the fridge for crisp skin.','Light coat of oil, then 1–2 tbsp Badia Herbes de Provence (salt-free) — optional paprika for color. No extra salt.','Truss and spin at ~375°F.','Pull at 165°F in the breast / 175°F in the thigh.','Rest 10–15 min before carving.'] },
+];
+function loadRecipes(){ try{ const v=JSON.parse(localStorage.getItem(REC_KEY)); return Array.isArray(v)?v:[]; }catch{ return []; } }
+function saveRecipes(list){ try{ localStorage.setItem(REC_KEY, JSON.stringify(list)); mirrorDeviceData(); return true; }catch{ toast('Could not save recipe — storage may be full'); return false; } }
+function allRecipes(){ return BUILTIN_RECIPES.concat(loadRecipes()); }
+function getRecipe(id){ return allRecipes().find(r=>r.id===id); }
+function blankRecipe(){ return { id:'r'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4), builtin:false, name:'', protein:'', cooker:'', targetTemp:'', pullTemp:'', estTime:'', wood:'', sides:'', sauce:'', plan:'', source:'', steps:[], createdAt:Date.now() }; }
+const REC_FIELDS=[['protein','Protein'],['cooker','Cooker'],['targetTemp','Grate temp'],['pullTemp','Pull at (internal)'],['estTime','Est. time'],['wood','Wood'],['sides','Sides'],['sauce','Sauce']];
+
+function renderRecipes(app){
+  const mine=loadRecipes();
+  const card=r=>`<div class="cook-card" role="link" tabindex="0" onclick="go('/recipe/'+${jsArg(r.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();go('/recipe/'+${jsArg(r.id)})}">
+    <div class="cc-top"><span class="cc-title">${esc(r.name||'Recipe')}</span><span class="cc-date">${r.builtin?'':'yours'}</span></div>
+    <div class="cc-meta">${esc(r.protein||'')}${r.protein&&r.cooker?' · ':''}${esc(r.cooker||'')}${r.targetTemp?' · '+esc(r.targetTemp):''}${r.pullTemp?' → '+esc(r.pullTemp):''}</div>
+  </div>`;
+  app.innerHTML=`
+    <div class="toolbar">
+      <div style="flex:1"><b>Pit Recipes</b> <span class="hint">tap one to cook it or read the play</span></div>
+      <button class="btn-primary" onclick="go('/recipe-new')">＋ New recipe</button>
+      <button class="btn-ghost btn-sm" onclick="go('/')">← Cooks</button>
+    </div>
+    ${mine.length?`<div class="cc-meta" style="margin:4px 0 8px">Your recipes</div>${mine.map(card).join('')}<div style="height:14px"></div>`:''}
+    <div class="cc-meta" style="margin:4px 0 8px">Pit classics</div>
+    ${BUILTIN_RECIPES.map(card).join('')}
+    <div style="height:24px"></div>`;
+}
+function renderRecipeDetail(app, r){
+  const steps=Array.isArray(r.steps)?r.steps:[];
+  const kv=REC_FIELDS.filter(f=>r[f[0]]).map(f=>`<dt>${esc(f[1])}</dt><dd>${esc(r[f[0]])}</dd>`).join('');
+  app.innerHTML=`
+    <div class="detail-h"><h2>${esc(r.name||'Recipe')}</h2>${r.builtin?'<span class="pill">classic</span>':'<span class="pill vs">yours</span>'}</div>
+    ${r.source?`<div class="cc-meta" style="margin-bottom:8px">${esc(r.source)}</div>`:''}
+    ${r.plan?`<div class="cc-meta" style="margin:-2px 0 10px;color:var(--gold)">📋 ${esc(r.plan)}</div>`:''}
+    ${kv?`<section class="card"><div class="sec-head"><span class="sec-title">The numbers</span></div><dl class="kv">${kv}</dl></section>`:''}
+    ${steps.length?`<section class="card"><div class="sec-head"><span class="sec-title">Method</span></div><div class="fields"><ol class="timeline" style="list-style:decimal;padding-left:20px">${steps.map(s=>`<li style="padding:4px 0">${esc(s)}</li>`).join('')}</ol></div></section>`:''}
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner">
+      <button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button>
+      <button class="btn-primary" style="flex:1" onclick="cookFromRecipe(${jsArg(r.id)})">🔥 Cook this</button>
+      ${r.builtin?'':`<button onclick="go('/recipe-edit/'+${jsArg(r.id)})">Edit</button><button class="btn-danger" onclick="delRecipe(${jsArg(r.id)})">Delete</button>`}
+    </div></div>`;
+}
+function renderRecipeForm(app, r, isNew){
+  const field=(k,label,ph)=>`<div class="fg"><label class="fl" for="rec_${k}">${esc(label)}</label><input id="rec_${k}" value="${esc(r[k]||'')}" placeholder="${esc(ph||'')}"></div>`;
+  app.innerHTML=`
+    <div class="detail-h"><h2>${isNew?'New recipe':'Edit recipe'}</h2></div>
+    <section class="card"><div class="fields">
+      ${field('name','Name','e.g. Competition Brisket')}
+      ${field('protein','Protein','whole packer brisket')}
+      ${field('cooker','Cooker','Spider Huntsman / Traeger 565…')}
+      <div class="row">${field('targetTemp','Grate temp','250°F')}${field('pullTemp','Pull at internal','203°F')}</div>
+      <div class="row">${field('estTime','Est. time','~12 hrs')}${field('wood','Wood','post oak')}</div>
+      ${field('sides','Sides','mac & cheese · slaw')}
+      ${field('sauce','Sauce','Kansas City BBQ')}
+      <div class="fg"><label class="fl" for="rec_plan">Plan / one-liner</label><input id="rec_plan" value="${esc(r.plan||'')}" placeholder="the short version of the game plan"></div>
+      <div class="fg"><label class="fl" for="rec_steps">Method — one step per line</label><textarea id="rec_steps" rows="8" placeholder="Trim the fat cap…&#10;Season with SPG…&#10;Smoke at 250°F…">${esc((r.steps||[]).join('\n'))}</textarea></div>
+      <div class="fg"><label class="fl" for="rec_source">Source <span class="hint">optional</span></label><input id="rec_source" value="${esc(r.source||'')}" placeholder="where it came from"></div>
+    </div></section>
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner">
+      <button class="btn-ghost btn-sm" onclick="go(${isNew?"'/recipes'":'"/recipe/"+'+jsArg(r.id)})">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveRecipeForm(${jsArg(r.id)})">Save recipe</button>
+    </div></div>`;
+}
+function saveRecipeForm(id){
+  const g=k=>{ const el=document.getElementById('rec_'+k); return el?el.value.trim():''; };
+  const name=g('name'); if(!name){ toast('Give the recipe a name'); return; }
+  const rec={ id, builtin:false, name, protein:g('protein'), cooker:g('cooker'), targetTemp:g('targetTemp'), pullTemp:g('pullTemp'),
+    estTime:g('estTime'), wood:g('wood'), sides:g('sides'), sauce:g('sauce'), plan:g('plan'), source:g('source'),
+    steps:g('steps').split('\n').map(s=>s.trim()).filter(Boolean), createdAt:Date.now() };
+  const list=loadRecipes(); const i=list.findIndex(x=>x.id===id);
+  if(i>=0) list[i]=Object.assign({}, list[i], rec); else list.push(rec);
+  if(saveRecipes(list)){ toast('Recipe saved 🔥'); go('/recipe/'+id); }
+}
+function delRecipe(id){ if(!confirm('Delete this recipe? (Only your own recipes can be deleted.)'))return; const list=loadRecipes().filter(r=>r.id!==id); saveRecipes(list); toast('Recipe deleted'); go('/recipes'); }
+function cookFromRecipe(id){
+  const r=getRecipe(id); if(!r){ toast('Recipe not found'); return; }
+  const c=blankCook('single');
+  c.title=r.name; c.protein=r.protein||''; c.plan=r.plan||''; c.sidesPlan=r.sides||''; c.saucePlan=r.sauce||'';
+  const now=new Date(), p=x=>String(x).padStart(2,'0'); c.date=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}`;
+  const s=c.sides[0]; s.name=r.cooker||''; s.targetTemp=r.targetTemp||''; s.wood=r.wood||''; s.pulledTemp=r.pullTemp||'';
+  if(Array.isArray(r.steps)&&r.steps.length) c.prep=r.steps.join(' · ');
+  const db=load(); db.cooks.push(c); if(save(db)){ toast('Cook started from recipe 🔥'); go('/cook/'+c.id); }
+}
+function saveCookAsRecipe(cookId){
+  const c=getCook(cookId); if(!c){ toast('Cook not found'); return; }
+  const s=c.sides[0]||{};
+  const steps=[c.prep, c.worked?('What worked: '+c.worked):'', c.change?('Next time: '+c.change):'']
+    .filter(Boolean).flatMap(t=>String(t).split(/\s*·\s*/)).map(t=>t.trim()).filter(Boolean);
+  const rec=blankRecipe();
+  Object.assign(rec, { name:c.title||c.protein||'Cook', protein:c.protein||'', cooker:s.name||'', targetTemp:s.targetTemp||'',
+    pullTemp:s.pulledTemp||'', estTime:s.totalTime||'', wood:s.wood||'', sides:c.sidesPlan||'', sauce:c.saucePlan||'',
+    plan:c.plan||'', source:'From your cook '+(fmtDate(c.date)||''), steps });
+  const list=loadRecipes(); list.push(rec); if(saveRecipes(list)){ toast('Saved as recipe 🔥'); go('/recipe/'+rec.id); }
+}
+
+// ---- list ----
+let searchQ = '';
+function forkcastHandoff(){
+  try{ const p=new URLSearchParams(location.search); if(p.get('from')==='forkcast'){ return {
+    name:(p.get('name')||'').slice(0,120),
+    servings:(p.get('servings')||'').slice(0,8),
+    ings:(p.get('ings')||'').slice(0,4000),
+    steps:(p.get('steps')||'').slice(0,8000)
+  }; } }catch(e){}
+  return null;
+}
+function handoffBanner(){
+  const h=forkcastHandoff(); if(!h||!h.name) return '';
+  const lines=v=>v?v.split('\n').filter(Boolean):[];
+  const ingHtml=lines(h.ings).length?`<div style="margin:8px 0 4px"><b>Ingredients${h.servings?` (serves ${esc(h.servings)})`:''}:</b><ul style="margin:5px 0;padding-left:20px">${lines(h.ings).map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`:'';
+  return `<div class="notice">📋 <b>From Forkcast</b> — you're making <b>${esc(h.name)}</b>.${ingHtml}<button class="btn-sm" onclick="startFromForkcast()">🔥 Log this cook</button> <button class="btn-sm btn-ghost" onclick="dismissHandoff()">Dismiss</button></div>`;
+}
+function startFromForkcast(){
+  const h=forkcastHandoff(); if(!h) return;
+  const c=blankCook('single'); c.title=h.name; c.source='forkcast';
+  if(h.ings) c.notes='Ingredients'+(h.servings?` (serves ${h.servings})`:'')+': '+h.ings.split('\n').filter(Boolean).join(' · ');
+  if(h.steps) c.steps=h.steps.split('\n').map(s=>s.trim()).filter(Boolean);
+  const db=load(); db.cooks.push(c);
+  if(save(db)){ try{history.replaceState(null,'',location.pathname+'#/');}catch(e){} go('/cook/'+c.id); }
+}
+function dismissHandoff(){ try{history.replaceState(null,'',location.pathname+'#/');}catch(e){} render(); }
+function cookResultsHtml() {
+  const db = load();
+  const cooks = db.cooks.slice().sort((a,b) => (b.date ? Date.parse(b.date)||b.createdAt : b.createdAt) - (a.date ? Date.parse(a.date)||a.createdAt : a.createdAt));
+  const q = searchQ.trim().toLowerCase();
+  const filtered = !q ? cooks : cooks.filter(c => JSON.stringify(c).toLowerCase().includes(q));
+  return filtered.length ? cookGroups(filtered) : (cooks.length
+    ? `<div class="empty">No cooks match "${esc(searchQ)}".</div>`
+    : `<div class="empty"><span class="flame">🔥</span>What are we making?<br>Fire one up — hit <b>🔥 Start a cook</b>.</div>`);
+}
+function renderList(app) {
+  const db = load();
+  app.innerHTML = `
+    ${handoffBanner()}
+    ${backupReminder(db)}
+    <div class="toolbar">
+      <input class="search" id="search" placeholder="Search cooks — protein, cooker, notes…" value="${esc(searchQ)}">
+      <button class="btn-primary" onclick="startWizard()">🔥 Start a cook</button>
+      <button class="btn-ghost btn-sm" onclick="go('/new/single')">full form</button>
+    </div>
+    <div id="cook-results">${cookResultsHtml()}</div>
+  `;
+  // Only re-render the results on input — leaving the search box in the DOM so
+  // the caret never resets (recreating it caused characters to type backwards).
+  const s = document.getElementById('search');
+  s.addEventListener('input', e => {
+    searchQ = e.target.value;
+    document.getElementById('cook-results').innerHTML = cookResultsHtml();
+  });
+}
+function backupReminder(db){
+  if(!db.cooks.length)return '';
+  const last=Number(localStorage.getItem(LAST_BACKUP_KEY))||0;
+  if(Date.now()-last<14*24*60*60*1000)return '';
+  return `<div class="notice"><b>Protect your cooks.</b> This device has not recorded a backup in the last 14 days. <button class="btn-sm" onclick="exportJSON()">Back up now</button></div>`;
+}
+function cookGroups(list){
+  const planned = list.filter(c=>c.source==='forkcast');
+  const freestyle = list.filter(c=>c.source!=='forkcast');
+  const sec=(title,arr)=> arr.length ? `<div class="cc-meta" style="margin:14px 2px 6px;font-weight:600;color:var(--ember-bright)">${title} <span class="hint">· ${arr.length}</span></div>${arr.map(cookCard).join('')}` : '';
+  if(planned.length && freestyle.length){
+    return sec('🍽️ Planned in Forkcast', planned) + sec('🔥 Off the cuff', freestyle);
+  }
+  return list.map(cookCard).join('');
+}
+function cookCard(c) {
+  const cookers = c.sides.map(s => s.name).filter(Boolean).join('  vs  ') || 'Cook';
+  const title = c.title || c.protein || cookers;
+  const best = c.sides.map(avgScore);
+  const showScore = Math.max(...best) > 0;
+  const scoreBlock = c.mode === 'compare'
+    ? c.sides.map((s,i)=>`<div class="score"><b>${best[i]?best[i].toFixed(1):'–'}</b><span>${esc((s.name||('#'+(i+1))).split(' ')[0])}</span></div>`).join('')
+    : `<div class="score"><b>${best[0]?best[0].toFixed(1):'–'}</b><span>avg</span></div>`;
+  return `<div class="cook-card" role="link" tabindex="0" onclick="go('/cook/'+${jsArg(c.id)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();go('/cook/'+${jsArg(c.id)})}">
+    <div class="cc-top"><span class="cc-title">${esc(title)}</span><span class="cc-date">${esc(fmtDate(c.date))}</span><button class="cc-del" onclick="event.stopPropagation();delCook(${jsArg(c.id)})" aria-label="Delete cook" title="Delete">✕</button></div>
+    <div class="cc-meta">
+      ${c.mode==='compare'?'<span class="pill vs">Head-to-head</span>':''}
+      ${c.source==='forkcast'?'<span class="pill">🍽️ Planned</span> ':''}
+      ${esc(c.protein||'')}${c.protein?' · ':''}${esc(cookers)}
+    </div>
+    ${showScore?`<div class="scores">${scoreBlock}</div>`:''}
+  </div>`;
+}
+
+// ---- guided wizard (conversational, one question at a time) ----
+const MEAL_IDEAS=[
+  { protein:'Prime brisket flat', sides:'Smoked mac & cheese · vinegar slaw', sauce:'Espresso BBQ sauce', plan:'250°F until the bark sets, wrap around 170°F, pull when probe-tender' },
+  { protein:'St. Louis–cut pork ribs', sides:'Pit beans · jalapeño cornbread', sauce:'Apple-bourbon BBQ glaze', plan:'275°F unwrapped until the bark sets, then glaze lightly near the finish' },
+  { protein:'Bone-in pork shoulder', sides:'Carolina slaw · skillet cornbread', sauce:'Eastern Carolina vinegar sauce', plan:'250°F, wrap after the bark sets, pull when probe-tender and rest at least 1 hour' },
+  { protein:'Bone-in chicken thighs', sides:'Grilled corn · mustard potato salad', sauce:'Alabama white sauce', plan:'325°F for bite-through skin, finish when the thighs reach about 175–185°F' },
+  { protein:'Reverse-seared tri-tip', sides:'Crispy smoked potatoes · grilled asparagus', sauce:'Chimichurri', plan:'Smoke at 225°F to 115–120°F internal, then sear hot and fast to finish' },
+  { protein:'Beef plate short ribs', sides:'Creamy polenta · charred broccolini', sauce:'Red-wine barbecue jus', plan:'275°F until deeply barked and probe-tender, then rest for at least 45 minutes' },
+  { protein:'Pork belly burnt ends', sides:'Sesame slaw · smoked baked beans', sauce:'Hot honey BBQ glaze', plan:'Smoke cubes at 250°F, pan with glaze when the bark sets, cook until tender and tacky' },
+  { protein:'Turkey breast', sides:'Sage stuffing muffins · smoked green beans', sauce:'Cranberry-chipotle BBQ sauce', plan:'275°F with a butter wrap near 140°F; pull around 160°F and rest before slicing' }
+];
+const MEAL_PAIRINGS=[
+  { keys:['brisket'], label:'brisket', sides:['Smoked mac & cheese','Pit beans','Vinegar slaw','Pickles & onions','Jalapeño cornbread'], sauces:['Kansas City BBQ sauce','Espresso BBQ sauce','Texas-style mop sauce'] },
+  { keys:['rib'], label:'ribs', sides:['Pit beans','Mustard potato salad','Grilled corn','Jalapeño cornbread','Vinegar slaw'], sauces:['Kansas City BBQ sauce','Apple-bourbon BBQ glaze','Hot honey BBQ glaze'] },
+  { keys:['shoulder','pulled pork'], label:'pulled pork', sides:['Carolina slaw','Skillet cornbread','Smoked baked beans','Collard greens','Mac & cheese'], sauces:['Carolina vinegar sauce','Mustard BBQ sauce','Kansas City BBQ sauce'] },
+  { keys:['pork belly','burnt end'], label:'pork belly', sides:['Sesame slaw','Smoked baked beans','Pickled vegetables','Grilled corn'], sauces:['Hot honey BBQ glaze','Korean BBQ glaze','Kansas City BBQ sauce'] },
+  { keys:['chicken','thigh','wing'], label:'chicken', sides:['Grilled corn','Mustard potato salad','Grilled vegetables','Mac & cheese','Cucumber salad'], sauces:['Alabama white sauce','Honey-chipotle BBQ sauce','Buffalo sauce'] },
+  { keys:['tri-tip','steak'], label:'tri-tip & steak', sides:['Smoked potatoes','Grilled asparagus','Grilled vegetables','Caesar salad'], sauces:['Chimichurri','Horseradish cream','Peppercorn sauce'] },
+  { keys:['short rib','beef rib'], label:'beef ribs', sides:['Creamy polenta','Charred broccolini','Smoked potatoes','Pit beans'], sauces:['Red-wine barbecue jus','Chimichurri','Texas-style mop sauce'] },
+  { keys:['turkey'], label:'turkey', sides:['Sage stuffing muffins','Smoked green beans','Sweet potatoes','Cranberry slaw'], sauces:['Cranberry-chipotle BBQ sauce','Alabama white sauce','Turkey gravy'] },
+  { keys:['salmon','fish'], label:'fish', sides:['Grilled asparagus','Lemon potatoes','Cucumber salad','Grilled vegetables'], sauces:['Dill yogurt sauce','Lemon butter','Maple-mustard glaze'] }
+];
+const GENERIC_PAIRING={ label:'BBQ', sides:['Smoked mac & cheese','Vinegar slaw','Pit beans','Cornbread','Potato salad','Grilled vegetables'], sauces:['Kansas City BBQ sauce','Carolina vinegar sauce','Alabama white sauce','Mustard BBQ sauce','Chimichurri'] };
+function mealPairing(protein){
+  const q=String(protein||'').toLowerCase();
+  return MEAL_PAIRINGS.filter(p=>p.keys.some(k=>q.includes(k))).sort((a,b)=>Math.max(...b.keys.map(k=>k.length))-Math.max(...a.keys.map(k=>k.length)))[0]||GENERIC_PAIRING;
+}
+function splitMenu(v){ return distinct(String(v||'').split(/\s*·\s*/)); }
+function learnedMenu(kind){ const key=kind==='sides'?'sidesPlan':'saucePlan'; return distinct(load().cooks.flatMap(c=>splitMenu(c[key]))); }
+function menuOptions(kind){
+  const pair=mealPairing(wiz&&wiz.cook&&wiz.cook.protein);
+  const inv=loadInv();
+  return distinct([...(kind==='sides'?pair.sides:pair.sauces),...(kind==='sides'?(inv.mealSides||[]):(inv.mealSauces||[])),...learnedMenu(kind)]);
+}
+function wizChooseProtein(idx){ wizCollect(); wiz.cook.protein=pastProteins()[idx]||''; renderWizard(document.getElementById('app')); }
+function wizProteinChanged(v){ wizCollect(); wiz.cook.protein=String(v||'').trim(); renderWizard(document.getElementById('app')); }
+function wizToggleMenu(kind,idx){
+  wizCollect(); const value=menuOptions(kind)[idx]; if(!value)return;
+  if(kind==='sides'){
+    const selected=splitMenu(wiz.cook.sidesPlan), at=selected.indexOf(value);
+    if(at<0)selected.push(value); else selected.splice(at,1);
+    wiz.cook.sidesPlan=selected.join(' · ');
+  } else wiz.cook.saucePlan=wiz.cook.saucePlan===value?'':value;
+  renderWizard(document.getElementById('app'));
+}
+function menuPicker(kind){
+  const isSides=kind==='sides', value=isSides?wiz.cook.sidesPlan:wiz.cook.saucePlan;
+  const selected=splitMenu(value), opts=menuOptions(kind), pair=mealPairing(wiz.cook.protein);
+  return `<div class="fg"><label class="fl" for="wz${kind}">${isSides?'Sides':'Sauce'} <span class="hint">optional${isSides?' · pick any':' · pick one'}</span></label>
+    <div class="hint" style="margin-bottom:7px">Popular with ${esc(pair.label)}</div>
+    <div class="chips">${opts.slice(0,10).map((o,i)=>`<button type="button" class="chip${selected.includes(o)?' on':''}" onclick="wizToggleMenu('${kind}',${i})">${esc(o)}</button>`).join('')}</div>
+    <input id="wz${kind}" value="${esc(value)}" placeholder="${isSides?'add your own or edit selections':'add your own sauce'}" style="margin-top:8px">
+  </div>`;
+}
+function startWizard(){ wiz = { step:0, cook:null }; go('/start'); }
+function wizExit(){ wiz=null; go('/'); }
+function wizMode(m){ wiz.cook = blankCook(m); wiz.cook.sides.forEach(s=>{ s.name=''; s._fuelSel=[]; s._woodSel=[]; }); wiz.cook.prepSel=[]; wiz.cook.prepExtra=''; wiz.step = 1; renderWizard(document.getElementById('app')); }
+function wizTogglePrepIdx(idx){ const ex=document.getElementById('wz'); if(ex) wiz.cook.prepExtra=ex.value; const item=prepOptions()[idx]; if(!wiz.cook.prepSel)wiz.cook.prepSel=[]; const i=wiz.cook.prepSel.indexOf(item); if(i<0)wiz.cook.prepSel.push(item); else wiz.cook.prepSel.splice(i,1); renderWizard(document.getElementById('app')); }
+function wizSetCooker(i,name){
+  const wasSelected=wiz.cook.sides[i].name===name;
+  wiz.cook.sides[i].name=wasSelected?'':name;
+  if(!wasSelected&&wiz.cook.mode==='single') wiz.step=2;
+  renderWizard(document.getElementById('app'));
+}
+function wizCustomCooker(i,name){
+  name=String(name||'').trim();
+  if(!name)return;
+  wiz.cook.sides[i].name=name;
+  if(wiz.cook.mode==='single') wiz.step=2;
+  renderWizard(document.getElementById('app'));
+}
+function wizCollect(){
+  const s=wiz.step;
+  if(s===1){ wiz.cook.sides.forEach((sd,i)=>{ const el=document.getElementById('ck'+i); if(el&&el.value.trim()) sd.name=el.value.trim(); }); }
+  if(s===2){
+    const el=document.getElementById('wz'); if(el) wiz.cook.protein=el.value.trim();
+    const pl=document.getElementById('wzplan'); if(pl) wiz.cook.plan=pl.value.trim();
+    const sd=document.getElementById('wzsides'); if(sd) wiz.cook.sidesPlan=sd.value.trim();
+    const sc=document.getElementById('wzsauce'); if(sc) wiz.cook.saucePlan=sc.value.trim();
+  }
+  if(s===3){ const el=document.getElementById('wz'); if(el) wiz.cook.prepExtra=el.value; wiz.cook.prep=[...(wiz.cook.prepSel||[]),(wiz.cook.prepExtra||'')].filter(Boolean).join(' · '); }
+}
+function wizValidate(){
+  if(wiz.step===1){
+    const missing=wiz.cook.sides.findIndex(s=>!s.name.trim());
+    if(missing>=0){ toast(wiz.cook.sides.length>1?`Choose cooker ${String.fromCharCode(65+missing)}`:'Choose a cooker first'); const el=document.getElementById('ck'+missing); if(el)el.focus(); return false; }
+    if(wiz.cook.sides.length>1&&wiz.cook.sides[0].name===wiz.cook.sides[1].name){ toast('Choose two different cookers'); return false; }
+  }
+  if(wiz.step===2&&!wiz.cook.protein.trim()){ toast('Choose a meat or tap “Give me a cook idea”'); const el=document.getElementById('wz'); if(el)el.focus(); return false; }
+  return true;
+}
+function wizNext(){ wizCollect(); if(!wizValidate())return; wiz.step++; renderWizard(document.getElementById('app')); }
+function wizSkip(){ if(wiz.step!==3&&wiz.step!==4)return; wiz.step++; renderWizard(document.getElementById('app')); }
+function wizBack(){ wizCollect(); wiz.step = Math.max(0, wiz.step-1); renderWizard(document.getElementById('app')); }
+function wizFinish(){
+  wizCollect();
+  if(wiz.cook.sides.some(s=>!s.name.trim())){ wiz.step=1; toast('Choose your cooker before starting'); renderWizard(document.getElementById('app')); return; }
+  if(!wiz.cook.protein.trim()){ wiz.step=2; toast('Choose a meat before starting'); renderWizard(document.getElementById('app')); return; }
+  const de=document.getElementById('wzdate');
+  wiz.cook.date = (de&&de.value) || wiz.cook.date || nowLocal();
+  const db=load(); db.cooks.push(wiz.cook); save(db); const id=wiz.cook.id; wiz=null; toast('Cook started 🔥'); go('/cook/'+id);
+}
+function suggestMeal(){
+  let idx=Math.floor(Math.random()*MEAL_IDEAS.length);
+  if(wiz.ideaIdx===idx) idx=(idx+1)%MEAL_IDEAS.length;
+  wiz.ideaIdx=idx;
+  const idea=MEAL_IDEAS[idx];
+  wiz.cook.protein=idea.protein; wiz.cook.sidesPlan=idea.sides; wiz.cook.saucePlan=idea.sauce; wiz.cook.plan=idea.plan;
+  renderWizard(document.getElementById('app'));
+}
+function cookerPicker(i,label){
+  const list=pastCookers(); const cur=wiz.cook.sides[i].name, custom=cur&&!list.includes(cur);
+  return `<div class="fg"><label class="fl" for="ck${i}">${label||'Cooker'} <span style="color:var(--ember-bright)">required</span></label>
+    <div class="chips">${list.map((c,ci)=>`<button class="chip${cur===c?' on':''}" onclick="wizSetCookerIdx(${i},${ci})">${esc(c)}</button>`).join('')}</div>
+    <input class="wiz-input" style="margin-top:8px;font-size:15px" id="ck${i}" value="${esc(custom?cur:'')}" placeholder="or type another cooker" onchange="wizCustomCooker(${i},this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();wizCustomCooker(${i},this.value)}">
+  </div>`;
+}
+function wizNav(skip){ return `<div class="wiz-nav"><button class="btn-ghost" onclick="wizBack()">← Back</button>${skip?`<button class="btn-ghost" onclick="wizSkip()">Skip</button>`:''}<button class="btn-primary" onclick="wizNext()">Next →</button></div>`; }
+const FIRE_CONFIGS=['Two-zone','Indirect / deflector','Direct','Snake method','Rotisserie','Water pan'];
+const FIRE_TEMPS=['225°F','250°F','275°F','300°F','325°F','350°F','375°F+'];
+const FIRE_LABELS={fuel:'Fuel',wood:'Wood',config:'Config',targetTemp:'Target grate temp'};
+function fireOpts(field){ const inv=loadInv(); return field==='fuel'?(inv.fuels||[]):field==='wood'?(inv.woods||[]):field==='config'?FIRE_CONFIGS:FIRE_TEMPS; }
+function wizFireMulti(si,field,oi){ const s=wiz.cook.sides[si]; const key='_'+field+'Sel'; if(!s[key])s[key]=[]; const v=fireOpts(field)[oi]; const i=s[key].indexOf(v); if(i<0)s[key].push(v); else s[key].splice(i,1); s[field]=s[key].join(' · '); renderWizard(document.getElementById('app')); }
+function wizFireSingle(si,field,oi){ const s=wiz.cook.sides[si]; const v=fireOpts(field)[oi]; s[field]=(s[field]===v?'':v); renderWizard(document.getElementById('app')); }
+function fireChipRow(s,si,field,single){ const opts=fireOpts(field); const sel=s['_'+field+'Sel']||[];
+  return `<div style="margin:10px 0 4px"><span class="fl">${FIRE_LABELS[field]}${single?'':' <span class="hint">(pick any)</span>'}</span></div>
+    <div class="chips">${opts.map((o,oi)=>`<button class="chip${single?(s[field]===o?' on':''):(sel.includes(o)?' on':'')}" onclick="${single?`wizFireSingle(${si},'${field}',${oi})`:`wizFireMulti(${si},'${field}',${oi})`}">${esc(o)}</button>`).join('')}</div>`;
+}
+function fireSideForm(s,si,two){
+  return `<div class="side"><div class="side-head">${two?`Cooker ${String.fromCharCode(65+si)}${s.name?' · '+esc(s.name):''}`:(s.name?esc(s.name):'The cook')}</div><div class="fields">
+    ${fireChipRow(s,si,'fuel',false)}${fireChipRow(s,si,'wood',false)}${fireChipRow(s,si,'config',true)}${fireChipRow(s,si,'targetTemp',true)}
+  </div></div>`;
+}
+function renderWizard(app){
+  if(!wiz){ return renderList(app); }
+  const step=wiz.step; let inner='';
+  if(step===0){
+    inner=`<div class="wiz-q">Fire it up. 🔥</div><div class="wiz-sub">One cooker, or a head-to-head?</div>
+      <div class="wiz-choices">
+        <button class="wiz-choice" onclick="wizMode('single')"><b>🔥 One cooker</b><span>Log a single cook</span></button>
+        <button class="wiz-choice" onclick="wizMode('compare')"><b>⚔️ Head-to-head</b><span>Compare two grills side by side</span></button>
+      </div>`;
+  } else if(step===1){
+    const two=wiz.cook.mode==='compare';
+    inner=`<div class="wiz-q">${two?'Which two cookers?':'What are you cooking on?'}</div>
+      ${cookerPicker(0, two?'Cooker A':null)}${two?cookerPicker(1,'Cooker B'):''}${two?wizNav(false):'<div class="wiz-nav"><button class="btn-ghost" onclick="wizBack()">← Back</button></div>'}`;
+  } else if(step===2){
+    const idea=Number.isInteger(wiz.ideaIdx)?MEAL_IDEAS[wiz.ideaIdx]:null;
+    inner=`<div class="wiz-q">What are you cooking?</div><div class="wiz-sub">Pick your own meat, or let Cook Log build tonight’s plate.</div>
+      <button class="btn-primary" type="button" onclick="suggestMeal()">🔥 ${idea?'Give me another idea':'Give me a cook idea'}</button>
+      ${idea?`<div class="idea-card"><b>${esc(idea.protein)}</b><p>${esc(idea.sides)}</p><p>${esc(idea.sauce)}</p></div>`:''}
+      ${pastProteins().length?`<div class="chips" style="margin-bottom:10px">${pastProteins().slice(0,10).map((p,idx)=>`<button class="chip${wiz.cook.protein===p?' on':''}" onclick="wizChooseProtein(${idx})">${esc(p)}</button>`).join('')}</div>`:''}
+      <label class="fl" for="wz">Meat &amp; cut <span style="color:var(--ember-bright)">required</span></label>
+      <div class="field-row"><input class="wiz-input" id="wz" list="dl_protein" value="${esc(wiz.cook.protein)}" placeholder="e.g. Prime packer brisket" onchange="wizProteinChanged(this.value)" onkeydown="if(event.key==='Enter')wizNext()">${micFor('wz')}</div>
+      <div style="margin-top:16px">${menuPicker('sides')}${menuPicker('sauce')}</div>
+      <label class="fl" for="wzplan" style="margin-top:16px">Game plan <span class="hint">optional — say it</span></label>
+      <div class="field-row"><input class="wiz-input" id="wzplan" value="${esc(wiz.cook.plan||'')}" placeholder="e.g. 250° low & slow, wrap at 165, pull at 203">${micFor('wzplan')}</div>${dataLists()}${wizNav(false)}`;
+  } else if(step===3){
+    const sel=wiz.cook.prepSel||[]; const opts=prepOptions();
+    inner=`<div class="wiz-q">How’d you prep it?</div><div class="wiz-sub">Tap what applies — edit the list under <b>Inventory</b></div>
+      <div class="chips">${opts.map((o,idx)=>`<button class="chip${sel.includes(o)?' on':''}" onclick="wizTogglePrepIdx(${idx})">${esc(o)}</button>`).join('')||'<span class="hint">No prep items yet — add rubs/techniques in Inventory.</span>'}</div>
+      <label class="fl" style="margin-top:16px">Anything else? <span class="hint">type or 🎤</span></label>
+      <div class="field-row"><input class="wiz-input" id="wz" value="${esc(wiz.cook.prepExtra||'')}" placeholder="e.g. 36-hr dry brine, light mustard binder">${micFor('wz')}</div>${wizNav(true)}`;
+  } else if(step===4){
+    const two=wiz.cook.sides.length>1;
+    inner=`<div class="wiz-q">Fire setup</div><div class="wiz-sub">Tap to pick — fuel &amp; wood take multiples; all optional</div>
+      <div class="sides ${two?'two':''}">${wiz.cook.sides.map((s,si)=>fireSideForm(s,si,two)).join('')}</div>${wizNav(true)}`;
+  } else {
+    const names=wiz.cook.sides.map(s=>s.name).filter(Boolean).join(' vs ')||'your cook';
+    const menu=[wiz.cook.sidesPlan&&`Sides: ${wiz.cook.sidesPlan}`,wiz.cook.saucePlan&&`Sauce: ${wiz.cook.saucePlan}`].filter(Boolean).join(' · ');
+    inner=`<div class="wiz-q">You’re set. 🔥</div><div class="wiz-sub">${esc(wiz.cook.protein||'Cook')} on ${esc(names)}.${menu?` ${esc(menu)}.`:''} As it cooks, just tap the timeline buttons — I’ll stamp the times. Scores &amp; details can wait till after you eat.</div>
+      <label class="fl" style="margin-top:4px">Start time <span class="hint">tap the calendar to change</span></label>
+      <input class="wiz-input" type="datetime-local" id="wzdate" value="${esc(wiz.cook.date||nowLocal())}" style="margin-bottom:16px">
+      <div class="wiz-choices"><button class="wiz-choice on" onclick="wizFinish()"><b>Start logging →</b><span>Save &amp; open the live timeline</span></button></div>`;
+  }
+  app.innerHTML=`<div class="wizard"><div class="wiz-top"><button class="btn-ghost btn-sm" onclick="wizExit()">✕ Cancel</button>${step>0&&step<5?`<span class="wiz-step">Step ${step} of 5</span>`:''}</div>${inner}</div>`;
+  const f=document.getElementById('wz'); if(f) f.focus();
+}
+
+// ---- form ----
+function renderForm(app, cook, isNew) {
+  const two = cook.sides.length > 1;
+  app.innerHTML = `
+    <div class="detail-h"><h2>${isNew ? (two?'New comparison':'New cook') : 'Edit cook'}</h2></div>
+    <section class="card"><div class="sec-head"><span class="sec-title">The Cook</span></div>
+      <div class="fields">
+        <div class="fg"><label class="fl">Title (optional)</label><input id="f_title" value="${esc(cook.title)}" placeholder="${two?'e.g. Brisket — Huntsman vs Traeger':'e.g. Sunday brisket'}"></div>
+        <div class="fg"><label class="fl">Date / start time</label><input type="datetime-local" id="f_date" value="${esc(cook.date)}"></div>
+        <div class="fg"><label class="fl">Protein &amp; cut</label><input id="f_protein" list="dl_protein" value="${esc(cook.protein)}" placeholder="e.g. Prime packer brisket"></div>
+        <div class="sides two">
+          <div class="fg"><label class="fl">Sides</label><input id="f_sidesPlan" value="${esc(cook.sidesPlan||'')}" placeholder="slaw, beans, mac & cheese…"></div>
+          <div class="fg"><label class="fl">Sauce</label><input id="f_saucePlan" value="${esc(cook.saucePlan||'')}" placeholder="Carolina vinegar, white sauce…"></div>
+        </div>
+        <div class="fg"><label class="fl">Game plan</label><input id="f_plan" value="${esc(cook.plan||'')}" placeholder="target temps, wrap, pull plan"></div>
+        <div class="fg"><label class="fl">Prep</label><textarea id="f_prep" placeholder="dry brine? how long? SPG ratio? trimmed?">${esc(cook.prep)}</textarea></div>
+      </div>
+    </section>
+    <div class="sides ${two?'two':''}">
+      ${cook.sides.map((s,i)=>sideForm(s,i,two)).join('')}
+    </div>
+    <section class="card"><div class="sec-head"><span class="sec-title">Takeaways</span></div>
+      <div class="fields">
+        <div class="fg"><label class="fl">Overall experience <span class="hint">(tap all that fit)</span></label>
+          <div class="chips" id="f_experience">${EXPERIENCE_TAGS.map(t=>`<button type="button" class="chip exp-chip${(cook.experience||[]).includes(t)?' on':''}" data-v="${esc(t)}" onclick="this.classList.toggle('on')">${esc(t)}</button>`).join('')}</div></div>
+        <div class="fg"><label class="fl">What worked</label><textarea id="f_worked">${esc(cook.worked)}</textarea></div>
+        <div class="fg"><label class="fl">🎯 Dial in next cook <span class="hint">(what to concentrate on)</span></label><textarea id="f_change" placeholder="e.g. run hotter for crispy skin; go lighter on salt">${esc(cook.change)}</textarea></div>
+        <div class="fg"><label class="fl">Probe / technique notes</label><textarea id="f_notes">${esc(cook.notes)}</textarea></div>
+        ${two?`<div class="fg"><label class="fl">Verdict — which cooker won &amp; why</label><textarea id="f_verdict" placeholder="The head-to-head call">${esc(cook.verdict)}</textarea></div>`:''}
+      </div>
+    </section>
+    <div style="height:16px"></div>
+    ${dataLists()}
+    <div class="foot-actions"><div class="inner">
+      <button class="btn-ghost" style="flex:0 0 auto" onclick="go('${isNew?'/':'/cook/'+cook.id}')">Cancel</button>
+      <button class="btn-primary" style="flex:1" onclick="saveForm('${cook.id}', ${isNew})">Save cook</button>
+    </div></div>
+  `;
+  // wire sliders
+  cook.sides.forEach((s,i)=>SIDE_GROUPS.forEach(g=>g.fields.forEach(f=>{ if(f.score){ const el=document.getElementById(`s${i}_${f.k}`); if(el) el.addEventListener('input',()=>{document.getElementById(`s${i}_${f.k}_v`).textContent = el.value==='0'?'–':el.value;}); } })));
+}
+function sideForm(s, i, two) {
+  return `<div class="side">
+    <div class="side-head">${two?`Cooker ${String.fromCharCode(65+i)}`:'The cook'}</div>
+    <div class="fields">
+      <div class="fg"><label class="fl">Cooker</label><input list="cookers" id="s${i}_name" value="${esc(s.name)}" placeholder="Spider Huntsman"></div>
+      ${SIDE_GROUPS.map(g=>`
+        <div style="margin:14px 0 6px"><span class="sec-title">${g.title}</span></div>
+        ${g.fields.map(f=>fieldInput(s,i,f)).join('')}
+      `).join('')}
+    </div>
+  </div>`;
+}
+function fieldInput(s, i, f) {
+  const id = `s${i}_${f.k}`;
+  if (f.score) {
+    const v = Number(s[f.k])||0;
+    return `<div class="fg"><label class="fl">${f.label} <span class="hint">(1–10)</span></label>
+      <div class="range-row"><input type="range" min="0" max="10" step="1" id="${id}" value="${v}">
+      <span class="range-val" id="${id}_v">${v||'–'}</span></div></div>`;
+  }
+  return `<div class="fg"><label class="fl">${f.label}</label><input id="${id}" list="dl_${f.k}" value="${esc(s[f.k])}" placeholder="${esc(f.ph||'')}"></div>`;
+}
+function saveForm(id, isNew) {
+  const db = load();
+  let cook = isNew ? null : db.cooks.find(c=>c.id===id);
+  const base = cook || blankCook('single');
+  const existing = getCook(id) || {}; // for side count/mode
+  const mode = (existing.mode) || (document.querySelectorAll('.side').length>1?'compare':'single');
+  const sideCount = document.querySelectorAll('.side').length;
+  const val = q => { const el=document.getElementById(q); return el?el.value:''; };
+  const sides = [];
+  for (let i=0;i<sideCount;i++){
+    const s = { name: val(`s${i}_name`) };
+    SIDE_GROUPS.forEach(g=>g.fields.forEach(f=>{ s[f.k] = f.score ? Number(val(`s${i}_${f.k}`))||0 : val(`s${i}_${f.k}`); }));
+    sides.push(s);
+  }
+  const updated = { ...base, id: isNew?base.id:id, mode: sideCount>1?'compare':'single',
+    title: val('f_title'), date: val('f_date'), protein: val('f_protein'), plan: val('f_plan'), prep: val('f_prep'),
+    sidesPlan: val('f_sidesPlan'), saucePlan: val('f_saucePlan'),
+    sides, worked: val('f_worked'), change: val('f_change'), notes: val('f_notes'), verdict: val('f_verdict'),
+    experience: [...document.querySelectorAll('#f_experience .exp-chip.on')].map(b=>b.dataset.v),
+    updatedAt: Date.now(), createdAt: base.createdAt || Date.now() };
+  if (isNew) db.cooks.push(updated); else { const idx=db.cooks.findIndex(c=>c.id===id); db.cooks[idx]=updated; }
+  save(db); toast('Cook saved 🔥'); go('/cook/'+updated.id);
+}
+
+// ---- detail ----
+function renderDetail(app, c) {
+  const two = c.sides.length>1;
+  const evts = (c.events||[]).slice().sort((a,b)=>a.t-b.t);
+  const et = t => new Date(t).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+  const sideTags = ['Both'].concat(c.sides.map(s=>s.name).filter(Boolean));
+  if(!sideTags.includes(evtSide)) evtSide='Both';
+  const timelineSection = `<section class="card"><div class="sec-head"><span class="sec-title">Live timeline</span><span class="hint" style="margin-left:auto">tap when it happens →</span></div>
+    <div class="fields">
+      ${two?`<div class="fg"><span class="fl">Tag which cooker</span><div class="row" id="sideTag">${sideTags.map((n,i)=>`<button class="btn-sm sidebtn${((evtSide===n)||(evtSide==='Both'&&i===0))?' on':''}" onclick="setEvtSide(${jsArg(n)},this)">${esc(n)}</button>`).join('')}</div></div>`:''}
+      <div class="row">${QUICK_EVENTS.map(e=>`<button class="btn-sm quickbtn" onclick="logEvent(${jsArg(c.id)},${jsArg(e)})">+ ${esc(e)}</button>`).join('')}</div>
+      <div class="row" style="margin-top:8px"><input id="customEvt" aria-label="Timeline note" placeholder="note — type or say it" style="flex:1" onkeydown="if(event.key==='Enter'){addCustomEvent(${jsArg(c.id)})}"><button onclick="addCustomEvent(${jsArg(c.id)})">Add</button>${supportsSpeech()?`<button class="mic" onclick="dictate(t=>logEvent(${jsArg(c.id)},t),this)">🎤 Say it</button>`:''}</div>
+      ${evts.length?`<ul class="timeline">${evts.map(e=>`<li><button class="btn-sm btn-ghost" aria-label="Delete timeline event" onclick="delEvent(${jsArg(c.id)},${e.t})" style="float:right;padding:1px 8px">✕</button><span class="t">${et(e.t)}</span>${esc(e.label)}${e.side&&e.side!=='Both'?` <span class="pill">${esc(e.side)}</span>`:''}</li>`).join('')}</ul>`:`<p class="hint" style="margin-top:10px">No events yet — tap a button above as the cook happens and it stamps the time for you.</p>`}
+    </div></section>`;
+  const metrics = [['name','Cooker']].concat(SIDE_GROUPS.flatMap(g=>g.fields.map(f=>[f.k,f.label,f.score])));
+  let body;
+  if (two) {
+    body = `<section class="card"><div class="sec-head"><span class="sec-title">Head-to-head</span></div>
+      <table class="cmp-table"><thead><tr><th>Metric</th>${c.sides.map((s,i)=>`<th>${esc(s.name||('Cooker '+String.fromCharCode(65+i)))}</th>`).join('')}</tr></thead>
+      <tbody>${metrics.filter(m=>m[0]!=='name').map(m=>{
+        const isScore=m[2]; const vals=c.sides.map(s=>s[m[0]]);
+        let best=-1; if(isScore){ const nums=vals.map(Number); const mx=Math.max(...nums); if(mx>0) best=nums.indexOf(mx); }
+        return `<tr><td class="metric">${esc(m[1])}</td>${vals.map((v,i)=>`<td class="${i===best?'winner':''}">${isScore?(Number(v)?v+'/10':'—'):(esc(v)||'—')}</td>`).join('')}</tr>`;
+      }).join('')}</tbody></table></section>`;
+  } else {
+    const s=c.sides[0];
+    body = `<section class="card"><div class="sec-head"><span class="sec-title">${esc(s.name||'The cook')}</span></div>
+      <dl class="kv">${metrics.filter(m=>m[0]!=='name').map(m=>{
+        const v=s[m[0]]; const disp=m[2]?(Number(v)?v+'/10':'—'):(esc(v)||'—');
+        return `<dt>${esc(m[1])}</dt><dd>${disp}</dd>`;
+      }).join('')}</dl></section>`;
+  }
+  const expRow = (c.experience&&c.experience.length)?`<dt>Overall</dt><dd>${c.experience.map(t=>`<span class="chip on" style="display:inline-block;margin:2px 6px 2px 0">${esc(t)}</span>`).join('')}</dd>`:'';
+  const takeaways = expRow + [['worked','What worked'],['change','🎯 Dial in next cook'],['notes','Notes'],['verdict','Verdict']]
+    .filter(t=>c[t[0]]).map(t=>`<dt>${t[1]}</dt><dd>${esc(c[t[0]])}</dd>`).join('');
+  app.innerHTML = `
+    <div class="detail-h">
+      <h2>${esc(c.title||c.protein||'Cook')}</h2>
+      ${two?'<span class="pill vs">Head-to-head</span>':''}
+    </div>
+    <div class="cc-meta" style="margin-bottom:8px">${esc(fmtDate(c.date))}${c.protein?' · '+esc(c.protein):''}</div>
+    ${(c.sidesPlan||c.saucePlan)?`<div class="cc-meta" style="margin:-4px 0 10px">${c.sidesPlan?`🥘 ${esc(c.sidesPlan)}`:''}${c.sidesPlan&&c.saucePlan?' · ':''}${c.saucePlan?`🥫 ${esc(c.saucePlan)}`:''}</div>`:''}
+    ${c.plan?`<div class="cc-meta" style="margin:-4px 0 10px;color:var(--gold)">📋 ${esc(c.plan)}</div>`:''}
+    ${timelineSection}
+    ${(c.steps&&c.steps.length)?`<section class="card"><div class="sec-head"><span class="sec-title">Cook steps</span><span class="hint" style="margin-left:auto">tap to check off as you go</span></div><div class="fields"><ul style="list-style:none;padding:0;margin:0">${c.steps.map((s,i)=>{const done=(c.stepsDone||[]).includes(i);return `<li onclick="toggleStep(${jsArg(c.id)},${i})" style="display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer;${done?'opacity:.5;text-decoration:line-through':''}"><span style="flex-shrink:0">${done?'✅':'⬜'}</span><span>${esc(s)}</span></li>`;}).join('')}</ul></div></section>`:''}
+    ${c.prep?`<section class="card"><div class="sec-head"><span class="sec-title">Prep</span></div><div class="fields">${esc(c.prep)}</div></section>`:''}
+    ${body}
+    ${takeaways?`<section class="card"><div class="sec-head"><span class="sec-title">Takeaways</span></div><dl class="kv">${takeaways}</dl></section>`:''}
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner">
+      <button class="btn-ghost btn-sm" onclick="go('/')">← All</button>
+      <button style="flex:1" onclick="showMarkdown(${jsArg(c.id)})">Copy markdown</button>
+      <button onclick="go('/edit/'+${jsArg(c.id)})">Edit</button>
+      <button class="btn-danger" onclick="delCook(${jsArg(c.id)})">Delete</button>
+    </div></div>
+  `;
+}
+function toggleStep(id,i){
+  const db=load(); const c=db.cooks.find(x=>x.id===id); if(!c)return;
+  if(!Array.isArray(c.stepsDone)) c.stepsDone=[];
+  const at=c.stepsDone.indexOf(i);
+  if(at<0) c.stepsDone.push(i); else c.stepsDone.splice(at,1);
+  const y=window.scrollY; save(db); renderDetail(document.getElementById('app'), getCook(id)); window.scrollTo(0,y);
+}
+function renderClock(app){
+  app.innerHTML = `
+    <div class="detail-h"><h2>🕒 Cook Clock</h2></div>
+    <div class="cc-meta" style="margin-bottom:10px">Work backward from dinner — tells you exactly when to light the fire.</div>
+    <section class="card"><div class="fields">
+      <div class="fg"><label class="fl" for="ck_eat">Eat at</label><input type="time" id="ck_eat" value="18:00" oninput="calcClock()"></div>
+      <div class="fg"><label class="fl" for="ck_cook">Cook time (hours)</label><input type="number" id="ck_cook" value="4" step="0.5" min="0" inputmode="decimal" oninput="calcClock()"></div>
+      <div class="fg"><label class="fl" for="ck_rest">Rest (minutes)</label><input type="number" id="ck_rest" value="30" step="5" min="0" inputmode="numeric" oninput="calcClock()"></div>
+      <div class="fg"><label class="fl" for="ck_prep">Fire prep — lighting coals (minutes)</label><input type="number" id="ck_prep" value="30" step="5" min="0" inputmode="numeric" oninput="calcClock()"></div>
+    </div></section>
+    <section class="card"><div class="sec-head"><span class="sec-title">Your timeline</span></div><div class="fields" id="ck_out"></div></section>
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner"><button class="btn-ghost btn-sm" onclick="go('/')">← Back</button></div></div>`;
+  calcClock();
+}
+function calcClock(){
+  const out=document.getElementById('ck_out'); if(!out) return;
+  const g=(id,f)=>{ const el=document.getElementById(id); return el?f(el.value):0; };
+  const eat=g('ck_eat',v=>v||'18:00');
+  const cook=Math.max(0, g('ck_cook',v=>parseFloat(v))||0);
+  const rest=Math.max(0, g('ck_rest',v=>parseInt(v,10))||0);
+  const prep=Math.max(0, g('ck_prep',v=>parseInt(v,10))||0);
+  const parts=String(eat).split(':'); const eatMin=(Number(parts[0])||0)*60+(Number(parts[1])||0);
+  const fmt=m=>{ m=((Math.round(m)%1440)+1440)%1440; let h=Math.floor(m/60); const mm=m%60; const ap=h<12?'AM':'PM'; let hr=h%12; if(hr===0)hr=12; return hr+':'+String(mm).padStart(2,'0')+' '+ap; };
+  const pullMin=eatMin-rest;
+  const meatOn=pullMin-cook*60;
+  const fireOn=meatOn-prep;
+  const prevDay=fireOn<0;
+  out.innerHTML = `<dl class="kv">
+      <dt>🔥 Light the fire by</dt><dd style="color:var(--ember-bright)"><b>${fmt(fireOn)}</b>${prevDay?' <span class="hint">(night before)</span>':''}</dd>
+      <dt>🍖 Meat on by</dt><dd>${fmt(meatOn)}</dd>
+      <dt>⏲️ Pull &amp; start the rest</dt><dd>${fmt(pullMin)}</dd>
+      <dt>🍽️ Plated / eat</dt><dd><b>${fmt(eatMin)}</b></dd>
+    </dl>
+    <div class="hint" style="margin-top:8px">Total from fire to fork: ${((cook*60+rest+prep)/60).toFixed(1)} hrs.${prevDay?' That start lands the night before — proper low-and-slow.':''}</div>`;
+}
+function delCook(id){ if(!confirm('Delete this cook? You can restore the most recently deleted cook from Data until another deletion replaces it.'))return; const db=load(); saveRecoveryPoint('delete-cook'); db.cooks=db.cooks.filter(c=>c.id!==id); save(db); toast('Deleted · restore available in Data'); if(location.hash.indexOf('/cook/')>=0) go('/'); else render(); }
+
+// ---- live timeline (tap-to-timestamp; the low-friction capture) ----
+function logEvent(id,label){ const db=load(); const c=db.cooks.find(x=>x.id===id); if(!c)return; if(!c.events)c.events=[]; c.events.push({t:Date.now(),label,side:(c.sides.length>1?evtSide:'')}); c.updatedAt=Date.now(); save(db); toast(label+' · '+new Date().toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})); renderDetail(document.getElementById('app'),c); }
+function addCustomEvent(id){ const el=document.getElementById('customEvt'); const v=(el&&el.value||'').trim(); if(!v)return; el.value=''; logEvent(id,v); }
+function delEvent(id,t){ const db=load(); const c=db.cooks.find(x=>x.id===id); if(!c||!c.events)return; c.events=c.events.filter(e=>e.t!==t); save(db); renderDetail(document.getElementById('app'),c); }
+function setEvtSide(v,btn){ evtSide=v; document.querySelectorAll('#sideTag .sidebtn').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); }
+
+// ---- markdown export (paste into cook-log.md) ----
+function cookMarkdown(c) {
+  const L=[]; const two=c.sides.length>1;
+  L.push(`## ${c.title||c.protein||'Cook'} — ${fmtDate(c.date)}`);
+  if(c.protein) L.push(`**Protein:** ${c.protein}`);
+  if(c.sidesPlan) L.push(`**Sides:** ${c.sidesPlan}`);
+  if(c.saucePlan) L.push(`**Sauce:** ${c.saucePlan}`);
+  if(c.plan) L.push(`**Game plan:** ${c.plan}`);
+  if(c.prep) L.push(`**Prep:** ${c.prep}`);
+  if((c.events||[]).length){ L.push(''); L.push('### Timeline'); c.events.slice().sort((a,b)=>a.t-b.t).forEach(e=>L.push(`- ${new Date(e.t).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})} — ${e.label}${e.side&&e.side!=='Both'?` (${e.side})`:''}`)); }
+  L.push('');
+  if(two){
+    const rows=SIDE_GROUPS.flatMap(g=>g.fields);
+    L.push(`| Metric | ${c.sides.map((s,i)=>mdCell(s.name||('Cooker '+String.fromCharCode(65+i)))).join(' | ')} |`);
+    L.push(`|---|${c.sides.map(()=>'---').join('|')}|`);
+    rows.forEach(f=>{ const vals=c.sides.map(s=>{const v=s[f.k];return f.score?(Number(v)?v+'/10':''):mdCell(v||'');}); if(vals.some(v=>v!=='')) L.push(`| ${mdCell(f.label)} | ${vals.join(' | ')} |`); });
+  } else {
+    const s=c.sides[0]; if(s.name) L.push(`**Cooker:** ${s.name}`);
+    SIDE_GROUPS.forEach(g=>{ const has=g.fields.some(f=>{const v=s[f.k];return f.score?Number(v):v;}); if(!has)return;
+      L.push(''); L.push(`### ${g.title}`);
+      g.fields.forEach(f=>{ const v=s[f.k]; if(f.score?Number(v):v) L.push(`- **${f.label}:** ${f.score?v+'/10':v}`); }); });
+  }
+  L.push('');
+  if(c.experience&&c.experience.length) L.push(`- **Overall:** ${c.experience.join(', ')}`);
+  [['worked','What worked'],['change','Dial in next cook'],['notes','Notes'],['verdict','Verdict']].forEach(t=>{ if(c[t[0]]) L.push(`- **${t[1]}:** ${c[t[0]]}`); });
+  return L.join('\n');
+}
+function showMarkdown(id){
+  const c=getCook(id); const md=cookMarkdown(c);
+  openModalHTML(`<h3>Markdown</h3><p class="hint">Paste into <b>cook-log.md</b> (newest at top).</p>
+    <pre class="md" id="mdout">${esc(md)}</pre>
+    <div class="row" style="margin-top:12px"><button class="btn-primary" onclick="copyText(document.getElementById('mdout').textContent,this)">Copy to clipboard</button>
+    <button class="btn-ghost" onclick="closeModal()">Close</button></div>`);
+}
+
+// ---- data backup ----
+function openData(){
+  const db=load();
+  openModalHTML(`<h3>Data & backup</h3>
+    <p class="hint">${db.cooks.length} cook(s) stored privately in this browser profile. Nothing is uploaded to a Cook Log account or server database. Cook Log also maintains a second on-device recovery copy when this browser supports IndexedDB.</p>
+    <div class="row" style="margin-top:12px">
+      <button class="btn-primary" onclick="exportJSON()">⬇ Export backup (.json)</button>
+      <button onclick="document.getElementById('impfile').click()">⬆ Import backup</button>
+      <input type="file" id="impfile" accept="application/json" style="display:none" onchange="importJSON(this)">
+      ${localStorage.getItem(RECOVERY_KEY)?'<button onclick="restoreRecoveryPoint()">↶ Restore last deleted cook</button>':''}
+    </div>
+    <p class="hint" style="margin-top:14px"><b>Important:</b> the on-device recovery copy is not a substitute for an exported backup. Clearing this site’s browser data or losing this device can remove both copies.</p>
+    <p class="hint" style="margin-top:14px">Cookers on file: ${COOKERS.join(', ')}.</p>
+    <div class="row" style="margin-top:12px"><button class="btn-ghost" onclick="closeModal()">Close</button></div>`);
+}
+function exportJSON(){
+  const backup={ kind:'cook-log-backup', version:2, exportedAt:new Date().toISOString(), cooks:load().cooks, inventory:loadInv(), onboarded:!!localStorage.getItem(ONB_KEY) };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='cook-log-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  localStorage.setItem(LAST_BACKUP_KEY,String(Date.now()));
+  setTimeout(()=>URL.revokeObjectURL(a.href),0); toast('Complete backup downloaded');
+}
+function importJSON(input){
+  const file=input.files[0]; if(!file)return; const r=new FileReader();
+  if(file.size>10*1024*1024){ alert('Backup is too large (10 MB maximum).'); return; }
+  r.onload=()=>{ try{ const data=JSON.parse(r.result); if(!data||!Array.isArray(data.cooks))throw 0;
+    const db=load(); const have=new Set(db.cooks.map(c=>c.id));
+    let added=0, skipped=0; data.cooks.forEach(raw=>{
+      const rawId=textVal(raw&&raw.id,80);
+      if(/^[A-Za-z0-9_-]+$/.test(rawId)&&have.has(rawId)){ skipped++; return; }
+      const c=normalizeCook(raw,have); if(c){ db.cooks.push(c); added++; } else skipped++;
+    });
+    if(data.inventory&&typeof data.inventory==='object'){
+      const inv=loadInv(); INV_CATS.forEach(([cat])=>{ if(Array.isArray(data.inventory[cat])) inv[cat]=distinct([...(inv[cat]||[]),...data.inventory[cat].map(v=>textVal(v,200))]); }); saveInv(inv);
+    }
+    if(data.onboarded) localStorage.setItem(ONB_KEY,'1');
+    if(!save(db)) return; toast(`Imported ${added} cook(s)${skipped?`; skipped ${skipped} invalid`:''}`); closeModal(); render();
+  }catch{ alert('Not a valid Cook Log backup file.'); } };
+  r.readAsText(file);
+}
+
+// ---- resilient on-device storage ----
+function deviceSnapshot(){
+  return {kind:'cook-log-device-snapshot',version:1,savedAt:Date.now(),cooks:load().cooks,inventory:loadInv(),onboarded:!!localStorage.getItem(ONB_KEY),lastBackup:Number(localStorage.getItem(LAST_BACKUP_KEY))||0};
+}
+function openDeviceDB(){
+  return new Promise((resolve,reject)=>{
+    if(!('indexedDB' in window))return reject(new Error('IndexedDB unavailable'));
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=()=>{ const db=req.result; if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE); };
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('IndexedDB failed'));
+  });
+}
+async function putDeviceSnapshot(snapshot){
+  const db=await openDeviceDB();
+  await new Promise((resolve,reject)=>{ const tx=db.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).put(snapshot,'current'); tx.oncomplete=resolve; tx.onerror=()=>reject(tx.error); tx.onabort=()=>reject(tx.error); });
+  db.close();
+}
+async function getDeviceSnapshot(){
+  const db=await openDeviceDB();
+  const value=await new Promise((resolve,reject)=>{ const tx=db.transaction(IDB_STORE,'readonly'); const req=tx.objectStore(IDB_STORE).get('current'); req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error); });
+  db.close(); return value;
+}
+let mirrorTimer=null;
+function mirrorDeviceData(){
+  clearTimeout(mirrorTimer);
+  mirrorTimer=setTimeout(()=>putDeviceSnapshot(deviceSnapshot()).catch(()=>{}),100);
+}
+function restoreSnapshot(snapshot){
+  if(!snapshot||!Array.isArray(snapshot.cooks)||!snapshot.inventory)return false;
+  localStorage.setItem(KEY,JSON.stringify({cooks:snapshot.cooks}));
+  localStorage.setItem(INV_KEY,JSON.stringify(snapshot.inventory));
+  if(snapshot.onboarded)localStorage.setItem(ONB_KEY,'1');
+  if(snapshot.lastBackup)localStorage.setItem(LAST_BACKUP_KEY,String(snapshot.lastBackup));
+  return true;
+}
+async function initDeviceStorage(){
+  try{
+    const mirror=await getDeviceSnapshot();
+    const hasLocal=localStorage.getItem(KEY)!==null||localStorage.getItem(INV_KEY)!==null;
+    if(!hasLocal&&mirror&&restoreSnapshot(mirror))toast('Recovered your Cook Log from this device');
+    await putDeviceSnapshot(deviceSnapshot());
+    if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+  }catch{}
+}
+function saveRecoveryPoint(reason){
+  try{ const s=deviceSnapshot(); s.reason=reason; localStorage.setItem(RECOVERY_KEY,JSON.stringify(s)); return true; }catch{return false;}
+}
+function restoreRecoveryPoint(){
+  try{
+    const s=JSON.parse(localStorage.getItem(RECOVERY_KEY));
+    if(!confirm('Restore the data saved immediately before the last cook deletion?'))return;
+    if(!restoreSnapshot(s))throw 0;
+    localStorage.removeItem(RECOVERY_KEY); mirrorDeviceData(); closeModal(); toast('Deleted cook restored'); render();
+  }catch{alert('The recovery copy is unavailable or invalid. Use an exported backup if you have one.');}
+}
+
+// ---- voice input (point, click, and talk) ----
+function supportsSpeech(){ return typeof window!=='undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window); }
+function dictate(cb, btn){
+  if(typeof window!=='undefined' && window.isSecureContext===false){ toast('Voice needs HTTPS or localhost — use the keyboard mic instead'); return; }
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('Voice not supported in this browser — use the keyboard mic'); return; }
+  let r; try{ r=new SR(); }catch(e){ toast('Voice unavailable'); return; }
+  r.lang='en-US'; r.interimResults=false; r.maxAlternatives=1;
+  if(btn) btn.classList.add('listening');
+  r.onresult=e=>{ try{ cb(e.results[0][0].transcript); }catch(_){} };
+  r.onerror=ev=>{ const x=ev&&ev.error;
+    if(x==='not-allowed'||x==='service-not-allowed') toast('Mic blocked — allow the microphone for this site in your browser settings');
+    else if(x==='audio-capture') toast('No microphone found');
+    else if(x==='network') toast('Voice needs a network connection');
+    else if(x==='no-speech') toast('Didn’t catch that — try again');
+    else toast('Voice error'+(x?': '+x:''));
+  };
+  r.onend=()=>{ if(btn) btn.classList.remove('listening'); };
+  try{ r.start(); toast('Listening… 🎤'); }catch(e){ if(btn) btn.classList.remove('listening'); toast('Couldn’t start mic — '+((e&&e.message)||'try again')); }
+}
+function micFor(id){ return supportsSpeech()?`<button class="mic" onclick="micInto('${id}',this)">🎤</button>`:''; }
+function micInto(id,btn){ dictate(t=>{ const el=document.getElementById(id); if(!el)return; el.value=(el.value?el.value+' ':'')+t; el.focus(); }, btn); }
+
+// ---- modal + clipboard ----
+let modalReturnFocus=null;
+function openModalHTML(html){ modalReturnFocus=document.activeElement; const m=document.getElementById('modal'); m.innerHTML=html.replace('<h3>','<h3 id="modal-title">'); document.getElementById('modalbg').classList.add('show'); m.focus(); }
+function closeModal(){ document.getElementById('modalbg').classList.remove('show'); if(modalReturnFocus&&modalReturnFocus.focus)modalReturnFocus.focus(); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&document.getElementById('modalbg').classList.contains('show'))closeModal(); });
+function copyText(txt,btn){ navigator.clipboard.writeText(txt).then(()=>{ if(btn){const o=btn.textContent;btn.textContent='Copied ✓';setTimeout(()=>btn.textContent=o,1500);} toast('Copied'); }).catch(()=>toast('Could not copy — select the text manually')); }
+
+// ---- install + offline app shell ----
+let installPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); installPrompt=e; });
+window.addEventListener('appinstalled',()=>{ installPrompt=null; document.getElementById('installBtn').hidden=true; toast('Cook Log installed 🔥'); });
+function installContext(){
+  const ua=navigator.userAgent||'';
+  const ios=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const android=/Android/i.test(ua);
+  const edge=/Edg\//i.test(ua);
+  const chrome=/(Chrome|CriOS)\//i.test(ua)&&!edge;
+  const firefox=/(Firefox|FxiOS)\//i.test(ua);
+  const safari=/Safari\//i.test(ua)&&!/(Chrome|CriOS|Edg|FxiOS)\//i.test(ua);
+  if(ios) return {label:'iPhone or iPad',steps:safari?'Tap the <b>Share</b> button (square with an up arrow), scroll down, choose <b>Add to Home Screen</b>, then tap <b>Add</b>.':'For a reliable iPhone/iPad installation, open this page in <b>Safari</b>. Tap <b>Share</b> (square with an up arrow), choose <b>Add to Home Screen</b>, then tap <b>Add</b>.'};
+  if(android) return {label:'Android',steps:chrome?'Tap Chrome’s <b>three-dot menu</b>, then choose <b>Install app</b> or <b>Add to Home screen</b>.':'Open this page in <b>Chrome</b>, tap the <b>three-dot menu</b>, then choose <b>Install app</b> or <b>Add to Home screen</b>.'};
+  if(edge) return {label:'Microsoft Edge',steps:'Open Edge’s <b>three-dot menu</b>, choose <b>Apps</b>, then <b>Install Cook Log</b>.'};
+  if(chrome) return {label:'Chrome on a computer',steps:'Click Chrome’s <b>three-dot menu</b>, choose <b>Cast, save, and share</b>, then <b>Install Cook Log</b>. You may also see an install icon at the right end of the address bar.'};
+  if(safari) return {label:'Safari on a Mac',steps:'In Safari, choose <b>File → Add to Dock</b>. On older macOS versions without that option, bookmark Cook Log for quick access.'};
+  if(firefox) return {label:'Firefox',steps:'Firefox desktop does not currently offer full website-app installation. Open Cook Log in <b>Chrome, Edge, or Safari</b> to install it, or bookmark this page in Firefox.'};
+  return {label:'This device',steps:'Open the browser menu and look for <b>Install app</b>, <b>Add to Home Screen</b>, or <b>Add to Dock</b>. Chrome, Edge, and Safari provide the best installation support.'};
+}
+async function installApp(){
+  if(installPrompt){ installPrompt.prompt(); await installPrompt.userChoice; return; }
+  const here=installContext();
+  openModalHTML(`<h3>Install Cook Log</h3>
+    <p>Add Cook Log to your Home Screen, dock, or desktop to launch it like an app and keep the app shell available offline.</p>
+    <div class="notice"><b>${here.label} — recommended steps</b><br>${here.steps}</div>
+    <p class="hint" style="margin-top:14px"><b>Other devices and browsers</b><br>
+      <b>iPhone/iPad (Safari):</b> Share → Add to Home Screen → Add.<br>
+      <b>Android (Chrome):</b> three-dot menu → Install app or Add to Home screen.<br>
+      <b>Windows (Chrome):</b> three-dot menu → Cast, save, and share → Install Cook Log.<br>
+      <b>Windows (Edge):</b> three-dot menu → Apps → Install Cook Log.<br>
+      <b>Mac (Safari):</b> File → Add to Dock.<br>
+      <b>Mac (Chrome):</b> three-dot menu → Cast, save, and share → Install Cook Log.</p>
+    <p class="hint">Your cooks and inventory remain in the browser/profile where you created them. Installing does not yet synchronize data between devices.</p>
+    <div class="row"><button class="btn-ghost" onclick="closeModal()">Close</button></div>`);
+}
+if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true){ document.getElementById('installBtn').hidden=true; }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>

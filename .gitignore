@@ -1,0 +1,12 @@
+# Generated journal site (rebuild with: node scripts/build-journal.mjs)
+journal/
+
+# Editor / OS cruft
+.DS_Store
+
+# Timestamped local backups of the app
+index.html.bak*
+index.html.backup*
+
+# Node
+node_modules/
