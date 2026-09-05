@@ -797,6 +797,14 @@ function cookFromRecipe(id){
   if(Array.isArray(r.steps)&&r.steps.length) c.prep=r.steps.join(' · ');
   const db=load(); db.cooks.push(c); if(save(db)){ toast('Cook started from recipe 🔥'); go('/cook/'+c.id); }
 }
+function costLine(c){
+  const cost=parseFloat(c.cost); if(!cost||isNaN(cost)) return '';
+  let wt=parseFloat(c.weight);
+  if(!wt||isNaN(wt)){ const m=String(c.protein||'').match(/(\d+(?:\.\d+)?)\s*lb/i); if(m) wt=parseFloat(m[1]); }
+  const perRaw = wt? ` · $${(cost/wt).toFixed(2)}/lb raw`:'';
+  const perCooked = wt? ` · ~$${(cost/(wt*0.6)).toFixed(2)}/lb cooked` : '';
+  return `<div class="cc-meta" style="margin:-4px 0 10px;color:var(--ember-bright)">💵 $${cost.toFixed(2)}${wt?` · ${wt} lb`:''}${perRaw}${perCooked}</div>`;
+}
 function cookAgain(id){
   const src=getCook(id); if(!src){ toast('Cook not found'); return; }
   const c=blankCook(src.mode==='compare'?'compare':'single');
@@ -1114,6 +1122,10 @@ function renderForm(app, cook, isNew) {
         <div class="fg"><label class="fl">Date / start time</label><input type="datetime-local" id="f_date" value="${esc(cook.date)}"></div>
         <div class="fg"><label class="fl">Protein &amp; cut</label><input id="f_protein" list="dl_protein" value="${esc(cook.protein)}" placeholder="e.g. Prime packer brisket"></div>
         <div class="sides two">
+          <div class="fg"><label class="fl">Weight (lb) <span class="hint">optional</span></label><input id="f_weight" type="number" step="0.01" min="0" value="${esc(cook.weight||'')}" placeholder="12.16" inputmode="decimal"></div>
+          <div class="fg"><label class="fl">Meat cost ($) <span class="hint">optional</span></label><input id="f_cost" type="number" step="0.01" min="0" value="${esc(cook.cost||'')}" placeholder="79.99" inputmode="decimal"></div>
+        </div>
+        <div class="sides two">
           <div class="fg"><label class="fl">Sides</label><input id="f_sidesPlan" value="${esc(cook.sidesPlan||'')}" placeholder="slaw, beans, mac & cheese…"></div>
           <div class="fg"><label class="fl">Sauce</label><input id="f_saucePlan" value="${esc(cook.saucePlan||'')}" placeholder="Carolina vinegar, white sauce…"></div>
         </div>
@@ -1181,7 +1193,7 @@ function saveForm(id, isNew) {
     sides.push(s);
   }
   const updated = { ...base, id: isNew?base.id:id, mode: sideCount>1?'compare':'single',
-    title: val('f_title'), date: val('f_date'), protein: val('f_protein'), plan: val('f_plan'), prep: val('f_prep'),
+    title: val('f_title'), date: val('f_date'), protein: val('f_protein'), weight: val('f_weight'), cost: val('f_cost'), plan: val('f_plan'), prep: val('f_prep'),
     sidesPlan: val('f_sidesPlan'), saucePlan: val('f_saucePlan'),
     sides, worked: val('f_worked'), change: val('f_change'), notes: val('f_notes'), verdict: val('f_verdict'),
     experience: [...document.querySelectorAll('#f_experience .exp-chip.on')].map(b=>b.dataset.v),
@@ -1231,6 +1243,7 @@ function renderDetail(app, c) {
       ${two?'<span class="pill vs">Head-to-head</span>':''}
     </div>
     <div class="cc-meta" style="margin-bottom:8px">${esc(fmtDate(c.date))}${c.protein?' · '+esc(c.protein):''}</div>
+    ${costLine(c)}
     ${(c.sidesPlan||c.saucePlan)?`<div class="cc-meta" style="margin:-4px 0 10px">${c.sidesPlan?`🥘 ${esc(c.sidesPlan)}`:''}${c.sidesPlan&&c.saucePlan?' · ':''}${c.saucePlan?`🥫 ${esc(c.saucePlan)}`:''}</div>`:''}
     ${c.plan?`<div class="cc-meta" style="margin:-4px 0 10px;color:var(--gold)">📋 ${esc(c.plan)}</div>`:''}
     ${timelineSection}
