@@ -453,7 +453,7 @@ const EXPERIENCE_TAGS = ['Perfect','Juicy','Tender','Great smoke','Good bark','W
   'Salty','Bland','Dry','Tough','Chewy','Overcooked','Undercooked','No smoke','Too smoky','Greasy','Rushed'];
 function blankCook(mode) {
   return {
-    id: uid(), createdAt: Date.now(), updatedAt: Date.now(), mode,
+    id: uid(), createdAt: Date.now(), updatedAt: Date.now(), mode, kind: 'meal',
     title: '', date: '', protein: '', plan: '', prep: '', sidesPlan: '', saucePlan: '', events: [],
     sides: mode === 'compare' ? [newSide(COOKERS[0]), newSide(COOKERS[1])] : [newSide('')],
     worked: '', change: '', notes: '', verdict: '', experience: [],
@@ -868,9 +868,10 @@ function menuPicker(kind){
     <input id="wz${kind}" value="${esc(value)}" placeholder="${isSides?'add your own or edit selections':'add your own sauce'}" style="margin-top:8px">
   </div>`;
 }
-function startWizard(){ wiz = { step:0, cook:null }; go('/start'); }
+function startWizard(){ wiz = { step:0, cook:null, kind:'meal' }; go('/start'); }
+function wizKind(k){ wiz.kind=k; if(wiz.cook) wiz.cook.kind=k; renderWizard(document.getElementById('app')); }
 function wizExit(){ wiz=null; go('/'); }
-function wizMode(m){ wiz.cook = blankCook(m); wiz.cook.sides.forEach(s=>{ s.name=''; s._fuelSel=[]; s._woodSel=[]; }); wiz.cook.prepSel=[]; wiz.cook.prepExtra=''; wiz.step = 1; renderWizard(document.getElementById('app')); }
+function wizMode(m){ wiz.cook = blankCook(m); wiz.cook.kind = wiz.kind||'meal'; wiz.cook.sides.forEach(s=>{ s.name=''; s._fuelSel=[]; s._woodSel=[]; }); wiz.cook.prepSel=[]; wiz.cook.prepExtra=''; wiz.step = 1; renderWizard(document.getElementById('app')); }
 function wizTogglePrepIdx(idx){ const ex=document.getElementById('wz'); if(ex) wiz.cook.prepExtra=ex.value; const item=prepOptions()[idx]; if(!wiz.cook.prepSel)wiz.cook.prepSel=[]; const i=wiz.cook.prepSel.indexOf(item); if(i<0)wiz.cook.prepSel.push(item); else wiz.cook.prepSel.splice(i,1); renderWizard(document.getElementById('app')); }
 function wizSetCooker(i,name){
   const wasSelected=wiz.cook.sides[i].name===name;
@@ -951,7 +952,14 @@ function renderWizard(app){
   if(!wiz){ return renderList(app); }
   const step=wiz.step; let inner='';
   if(step===0){
-    inner=`<div class="wiz-q">Fire it up. 🔥</div><div class="wiz-sub">One cooker, or a head-to-head?</div>
+    const k=wiz.kind||'meal';
+    inner=`<div class="wiz-q">Fire it up. 🔥</div><div class="wiz-sub">What are you cooking?</div>
+      <div class="wiz-choices">
+        <button class="wiz-choice${k==='meal'?' on':''}" onclick="wizKind('meal')"><b>🍽️ Full meal</b><span>Meat + sides</span></button>
+        <button class="wiz-choice${k==='bbq'?' on':''}" onclick="wizKind('bbq')"><b>🔥 Just the BBQ</b><span>Meat only</span></button>
+        <button class="wiz-choice${k==='sides'?' on':''}" onclick="wizKind('sides')"><b>🥗 Just sides</b><span>No meat</span></button>
+      </div>
+      <div class="wiz-sub" style="margin-top:18px">One cooker, or a head-to-head?</div>
       <div class="wiz-choices">
         <button class="wiz-choice" onclick="wizMode('single')"><b>🔥 One cooker</b><span>Log a single cook</span></button>
         <button class="wiz-choice" onclick="wizMode('compare')"><b>⚔️ Head-to-head</b><span>Compare two grills side by side</span></button>
@@ -961,14 +969,19 @@ function renderWizard(app){
     inner=`<div class="wiz-q">${two?'Which two cookers?':'What are you cooking on?'}</div>
       ${cookerPicker(0, two?'Cooker A':null)}${two?cookerPicker(1,'Cooker B'):''}${two?wizNav(false):'<div class="wiz-nav"><button class="btn-ghost" onclick="wizBack()">← Back</button></div>'}`;
   } else if(step===2){
+    const kind=wiz.cook.kind||'meal';
     const idea=Number.isInteger(wiz.ideaIdx)?MEAL_IDEAS[wiz.ideaIdx]:null;
-    inner=`<div class="wiz-q">What are you cooking?</div><div class="wiz-sub">Pick your own meat, or let Cook Log build tonight’s plate.</div>
-      <button class="btn-primary" type="button" onclick="suggestMeal()">🔥 ${idea?'Give me another idea':'Give me a cook idea'}</button>
-      ${idea?`<div class="idea-card"><b>${esc(idea.protein)}</b><p>${esc(idea.sides)}</p><p>${esc(idea.sauce)}</p></div>`:''}
-      ${pastProteins().length?`<div class="chips" style="margin-bottom:10px">${pastProteins().slice(0,10).map((p,idx)=>`<button class="chip${wiz.cook.protein===p?' on':''}" onclick="wizChooseProtein(${idx})">${esc(p)}</button>`).join('')}</div>`:''}
-      <label class="fl" for="wz">Meat &amp; cut <span class="hint">optional — leave blank for a sides-only cook</span></label>
-      <div class="field-row"><input class="wiz-input" id="wz" list="dl_protein" value="${esc(wiz.cook.protein)}" placeholder="e.g. Prime packer brisket" onchange="wizProteinChanged(this.value)" onkeydown="if(event.key==='Enter')wizNext()">${micFor('wz')}</div>
-      <div style="margin-top:16px">${menuPicker('sides')}${menuPicker('sauce')}</div>
+    const showMeat = kind!=='sides';
+    const showSides = kind!=='bbq';
+    const q = kind==='sides'?'What sides are you making?':kind==='bbq'?'What are you smoking?':'What are you cooking?';
+    const sub = kind==='sides'?'Pick your sides below — no meat needed.':kind==='bbq'?'Just the meat this time.':'Pick your own meat, or let Cook Log build tonight’s plate.';
+    inner=`<div class="wiz-q">${q}</div><div class="wiz-sub">${sub}</div>
+      ${kind==='meal'?`<button class="btn-primary" type="button" onclick="suggestMeal()">🔥 ${idea?'Give me another idea':'Give me a cook idea'}</button>
+      ${idea?`<div class="idea-card"><b>${esc(idea.protein)}</b><p>${esc(idea.sides)}</p><p>${esc(idea.sauce)}</p></div>`:''}`:''}
+      ${showMeat?`${pastProteins().length?`<div class="chips" style="margin-bottom:10px">${pastProteins().slice(0,10).map((p,idx)=>`<button class="chip${wiz.cook.protein===p?' on':''}" onclick="wizChooseProtein(${idx})">${esc(p)}</button>`).join('')}</div>`:''}
+      <label class="fl" for="wz">Meat &amp; cut ${kind==='bbq'?'':'<span class="hint">optional</span>'}</label>
+      <div class="field-row"><input class="wiz-input" id="wz" list="dl_protein" value="${esc(wiz.cook.protein)}" placeholder="e.g. Prime packer brisket" onchange="wizProteinChanged(this.value)" onkeydown="if(event.key==='Enter')wizNext()">${micFor('wz')}</div>`:''}
+      ${showSides?`<div style="margin-top:16px">${menuPicker('sides')}${menuPicker('sauce')}</div>`:''}
       <label class="fl" for="wzplan" style="margin-top:16px">Game plan <span class="hint">optional — say it</span></label>
       <div class="field-row"><input class="wiz-input" id="wzplan" value="${esc(wiz.cook.plan||'')}" placeholder="e.g. 250° low & slow, wrap at 165, pull at 203">${micFor('wzplan')}</div>${dataLists()}${wizNav(false)}`;
   } else if(step===3){
