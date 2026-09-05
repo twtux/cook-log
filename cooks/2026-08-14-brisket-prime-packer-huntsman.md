@@ -18,6 +18,29 @@
 | Total | 16h 20m |
 | Stall | 8h 15m (!!) |
 
+## Precise timeline (clock-by-clock)
+*From the illustrated cook log (Claude-desktop, generated 2026-08-16). Lake Mary, FL.*
+- **5:30a — Trim.** Meat side first: hard fat wedge + silverskin off the left, surface fat shaved, corners rounded. Fat cap taken from ~½" down to ~⅜". ~1 lb of trim off.
+- **5:45a — Fat cap.** Two shallow passes, checking the front profile between each.
+- **5:55a — Grain notch.** Corner cut at the lower right, *along the grain*, so fiber direction stays readable once bark covers the surface.
+- **6:00a — Season.** 16-mesh pepper, Morton kosher, granulated garlic. Heavy on every face incl. the cap.
+- **6:10a — On the grill.** Huntsman 22" + Venom controller, 250°F target, no wrap, water pan on the lower grate.
+- **9:10a — 3 hrs in.** 125°F. Bark already dark + even, pepper standing proud. No spritz the entire cook.
+- **12:03p — Stall begins.** 149°F. Pit steady 248, fan cycling 0–31%. Refueled + leveled the coal bed.
+- **2:43p — Still stalled.** 152°F after 2h 20m — one degree. Fan at 0 (fire had more capacity than needed).
+- **3:31p — Rain.** Pit dipped to 245, coals stirred, cold spots relit with a torch. Back to 249 by 3:56.
+- **4:56p — Bark set.** Deep, cracked, dry to the touch. Rendered fat pooling under the front edge. Water pan long dry.
+- **5:00p — Probe conflict.** Instant-read 183°F in the thick flat while the leave-in still read 152. Placement, not a fault — leave-in stopped being useful.
+- **6:42p — Point tender, flat not.** Point probing like butter; flat ~180 and still fighting (doneness is called on the flat).
+- **8:16p — Fire trouble.** Pit down to 210, fan at 48%. Fresh lump had smothered the bed. Also caught the pit setpoint had been cleared to blank.
+- **8:59p — Recovered.** 265°F, fan back to 0. Setpoint restored to 250.
+- **9:23p — Climbing.** 166°F, ~12°/hr — first real post-stall climb of the day.
+- **10:30p — Pulled.** Butter through the flat. Wrapped in butcher paper. Dry very end of the flat trimmed off.
+- **10:45p — First slice.** Deep even smoke ring, pink through the middle, slices holding. Rest of the packer frozen whole.
+
+## Slicing — cut across the notch
+The 5:55a grain notch runs *along* the grain, so slices cross it at ~90°. Work from that corner across the flat at ~¼". Where the point starts overlapping, stop, separate the two muscles at the fat seam, rotate the point a quarter turn, and read the fibers on the freshly exposed face before continuing.
+
 ## Prep / Trim (5:30a)
 - Trimmed **meat side first** — hard fat wedge + silverskin off the left, surface fat shaved, corners rounded.
 - **Fat cap taken from ~1/2" down to ~3/8".**
