@@ -390,6 +390,26 @@ function saveInv(inv){ try{ localStorage.setItem(INV_KEY, JSON.stringify(inv)); 
 function addInvItem(cat){ const el=document.getElementById('inv_'+cat); const v=(el&&el.value||'').trim(); if(!v)return; const inv=loadInv(); if(!inv[cat])inv[cat]=[]; if(!inv[cat].includes(v))inv[cat].push(v); saveInv(inv); renderInventory(document.getElementById('app')); }
 function removeInvItem(cat,idx){ const inv=loadInv(); inv[cat].splice(idx,1); saveInv(inv); renderInventory(document.getElementById('app')); }
 function prepOptions(){ const inv=loadInv(); return [...(inv.techniques||[]), ...(inv.rubs||[])]; }
+// Protein-specific prep coaching for the wizard's "How'd you prep it?" step.
+const PREP_ADVICE=[
+  {k:['brisket','packer'],t:'Trim the fat cap to ~¼", square the edges, pull the silverskin. Salt + coarse black pepper only (skip sugar — it burns over a 12+ hr cook). Inject with beef broth for insurance. Probe the dead-center thickest part of the flat; wrap in butcher paper at ~165°F to beat the stall.'},
+  {k:['pork butt','boston butt','shoulder','pulled pork'],t:'Leave the fat cap ~¼". Inject with apple juice + cider vinegar. Yellow-mustard binder + a sweet rub. Pull at ~203°F, rest 1 hr, then shred and dress with Carolina vinegar sauce.'},
+  {k:['rib'],t:'Pull the membrane off the bone side. Light yellow-mustard binder + rub, no injection. Spritz once the bark sets; glaze only the last 20–30 min so the sugar doesn\'t scorch.'},
+  {k:['boneless chicken thigh','chicken thigh','thigh'],t:'Trim the big fat pockets. Salt 30–60 min ahead — skip the overnight brine (thighs are forgiving). Killer Hogs rub. Run 300°F, pull 175–185°F: dark meat goes tender high, rubbery low.'},
+  {k:['wing'],t:'Dry-brine with kosher salt + ½ tsp baking powder per lb, uncovered 1–2 hrs, for crispy skin. Rub, cook hot (350–400°F), sauce at the very end.'},
+  {k:['whole chicken','rotisserie'],t:'ONE salt step only (your rule). 2-day uncovered air-dry for crisp skin. Truss, run 325–350°F, pull breast 160–165 / thigh 175. One fruit-wood chunk.'},
+  {k:['turkey'],t:'Brine or dry-brine overnight. Compound butter under the skin. 275°F, pull the breast ~160°F (carryover to 165), rest 20 min, slice against the grain.'},
+  {k:['tri-tip','tri tip'],t:'Trim silverskin. SPG rub. Reverse-sear: 225°F to ~120°F internal, then hot-sear to 130°F. Slice against the grain — it changes direction at the seam, so rotate.'},
+  {k:['short rib','beef rib','plate rib'],t:'Salt + coarse pepper, leave the fat. 275°F, no wrap, pull ~203°F when they jiggle. Long rest.'},
+  {k:['pork belly','burnt end'],t:'Cube ~1.5", season all sides. Smoke to bark (~2.5 hr), pan with butter + brown sugar + honey covered till tender, then uncover and glaze tacky.'},
+  {k:['salmon','fish'],t:'Dry-brine (salt + brown sugar) 1 hr, rinse, pat dry, air-dry 30–60 min to form a pellicle. Smoke low 200–225°F to 130–135°F. Alder or cherry wood.'}
+];
+function prepAdvice(protein, kind){
+  const p=String(protein||'').toLowerCase();
+  if(!p) return kind==='sides'?'Cook sides in cast iron or foil pans and park them under the meat for free drippings. Most sides just want seasoning + smoke time — don\'t overthink it.':'No meat picked — tap what you did, or add a note below.';
+  const hit=PREP_ADVICE.find(a=>a.k.some(kw=>p.includes(kw)));
+  return hit?hit.t:'Trim off hard fat + silverskin, pick ONE salt step (dry-brine OR a salted rub, not both), add a binder if the rub needs help sticking, and let it sit while the pit comes up to temp.';
+}
 function renderInventory(app){
   const inv=loadInv();
   app.innerHTML=`<div class="detail-h"><h2>Your inventory</h2></div>
@@ -987,6 +1007,7 @@ function renderWizard(app){
   } else if(step===3){
     const sel=wiz.cook.prepSel||[]; const opts=prepOptions();
     inner=`<div class="wiz-q">How’d you prep it?</div><div class="wiz-sub">Tap what applies — edit the list under <b>Inventory</b></div>
+      <div class="idea-card" style="margin-bottom:14px"><b>💡 Prep tip${wiz.cook.protein?` — ${esc(wiz.cook.protein)}`:''}</b><p style="margin:4px 0 0">${esc(prepAdvice(wiz.cook.protein, wiz.cook.kind))}</p></div>
       <div class="chips">${opts.map((o,idx)=>`<button class="chip${sel.includes(o)?' on':''}" onclick="wizTogglePrepIdx(${idx})">${esc(o)}</button>`).join('')||'<span class="hint">No prep items yet — add rubs/techniques in Inventory.</span>'}</div>
       <label class="fl" style="margin-top:16px">Anything else? <span class="hint">type or 🎤</span></label>
       <div class="field-row"><input class="wiz-input" id="wz" value="${esc(wiz.cook.prepExtra||'')}" placeholder="e.g. 36-hr dry brine, light mustard binder">${micFor('wz')}</div>${wizNav(true)}`;
