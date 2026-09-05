@@ -496,6 +496,7 @@ function render() {
   if (h === '/recipes') return renderRecipes(app);
   if (h === '/recipe-new') return renderRecipeForm(app, blankRecipe(), true);
   const mRE = h.match(/^\/recipe-edit\/(.+)$/); if (mRE) { const r = getRecipe(mRE[1]); return r && !r.builtin ? renderRecipeForm(app, r, false) : renderRecipes(app); }
+  if (h === '/sides-guide') return renderSidesGuide(app);
   const mSH = h.match(/^\/shop\/(.+)$/); if (mSH) { const r = getRecipe(mSH[1]); return r ? renderShoppingList(app, r) : renderRecipes(app); }
   const mR = h.match(/^\/recipe\/(.+)$/); if (mR) { const r = getRecipe(mR[1]); return r ? renderRecipeDetail(app, r) : renderRecipes(app); }
   renderList(app);
@@ -552,6 +553,7 @@ function renderRecipes(app){
     <div class="toolbar">
       <div style="flex:1"><b>Pit Recipes</b> <span class="hint">tap one to cook it or read the play</span></div>
       <button class="btn-primary" onclick="go('/recipe-new')">＋ New recipe</button>
+      <button class="btn-ghost btn-sm" onclick="go('/sides-guide')">🌽 Sides</button>
       <button class="btn-ghost btn-sm" onclick="go('/')">← Cooks</button>
     </div>
     ${mine.length?`<div class="cc-meta" style="margin:4px 0 8px">Your recipes</div>${mine.map(card).join('')}<div style="height:14px"></div>`:''}
@@ -576,6 +578,30 @@ function renderRecipeDetail(app, r){
       ${r.builtin?'':`<button onclick="go('/recipe-edit/'+${jsArg(r.id)})">Edit</button><button class="btn-danger" onclick="delRecipe(${jsArg(r.id)})">Delete</button>`}
     </div></div>`;
 }
+// ---- Quick side recipes (shown in the Sides guide) ----
+const SIDE_RECIPES={
+  'Smoked mac & cheese':{ing:'1 lb elbow macaroni · 3 cups sharp cheddar · 1 cup gruyère · 4 oz cream cheese · 3 cups whole milk · 4 tbsp butter + ¼ cup flour · 1 tsp rub',steps:'Boil macaroni 2 min shy. Make a roux (butter+flour), whisk in milk till thick, kill heat, stir in cheeses + rub. Fold in pasta, top with cheddar, smoke 275°F ~1 hr. Shred your own cheese.'},
+  'Coleslaw':{ing:"14 oz bagged coleslaw mix · ½ cup Duke's mayo · 2 tbsp apple cider vinegar · 1 tbsp Dijon · 1 tbsp sugar · ½ tsp celery seed",steps:'Whisk the dressing, toss with the mix, chill 1 hr. The sharp bite that cuts rich smoked meat.'},
+  'Pit beans':{ing:"2×28 oz Bush's baked beans · 6 slices thick-cut bacon · 1 yellow onion · 1 green bell pepper · ½ cup brown sugar · 2 tbsp yellow mustard · ½ cup BBQ sauce",steps:'Render bacon, soften onion+pepper in the fat, stir in everything. Smoke uncovered 275°F 2–2.5 hrs. Best parked under a brisket/butt.'},
+  'Smoked green beans':{ing:'2 lb fresh green beans · 6 slices thick-cut bacon · ½ yellow onion · 3 cloves garlic · 1 cup low-sodium chicken broth · 2 tbsp brown sugar · 1 tbsp cider vinegar · 1 tbsp rub',steps:'Render bacon, soften onion+garlic, add beans+broth+sugar+vinegar+rub. Smoke uncovered 250–275°F ~1.5–2 hrs. Cook them under the meat.'},
+  'Corn on the cob':{ing:'6 ears corn, husked · 4 tbsp melted butter · 1 tbsp rub · cotija/parmesan (optional)',steps:'Brush with butter, dust with rub. Smoke right on the grate 275–300°F ~45 min, turning, till tender with a little char. Finish with cheese.'},
+  'Cornbread':{ing:'1½ cups cornmeal · 1 cup flour · 1 tbsp baking powder · 2 tbsp sugar · 1½ cups buttermilk · 2 eggs · 6 tbsp melted butter',steps:'Heat a buttered cast-iron skillet at 425°F. Mix dry, whisk in wet, pour into the hot pan (should sizzle), bake 20–25 min. Add jalapeño+cheddar for the spicy version.'},
+  'Potato salad':{ing:"2 lb Yukon gold potatoes · ¾ cup Duke's mayo · 3 tbsp yellow mustard · 2 tbsp dill relish · ¼ cup minced yellow onion · 3 hard-boiled eggs · 1 tbsp cider vinegar · paprika",steps:'Boil potatoes till fork-tender, splash with vinegar while warm. Fold in everything else, chill 1 hr+, dust paprika.'},
+  'Collard greens':{ing:'2 lb collards, stemmed+chopped · 6 slices thick-cut bacon (or a ham hock) · 1 yellow onion · 4 cloves garlic · 4 cups low-sodium chicken broth · 2 tbsp cider vinegar · 1 tbsp brown sugar · 1 tsp red pepper flakes',steps:'Render bacon/brown the hock, soften onion+garlic, add greens+broth+vinegar+sugar+flakes. Simmer covered low 1.5–2 hrs till silky. Serve with the pot likker.'},
+  'Fried okra':{ing:'1 lb okra, sliced ½" · 1 cup buttermilk · 1 cup cornmeal · ½ cup flour · salt+pepper · peanut oil',steps:'Soak okra in buttermilk 10 min. Toss in cornmeal+flour+S&P. Fry in 350°F peanut oil ~3–4 min till golden, salt right away.'},
+  'Hush puppies':{ing:'1 cup cornmeal · ½ cup flour · 1 tsp baking powder · 1 tbsp sugar · ¼ cup grated yellow onion · ¾ cup buttermilk · 1 egg · peanut oil',steps:'Mix dry, stir in onion+buttermilk+egg, rest 10 min. Drop tbsp scoops into 350°F oil, fry ~3 min till deep golden.'},
+  'Texas toast':{ing:'8 slices thick-cut white bread · 6 tbsp softened butter · 3 cloves garlic · ¼ cup parmesan · 1 tbsp parsley',steps:'Mash butter+garlic+parm+parsley, spread on both sides, griddle in cast iron over medium till golden both sides.'},
+  'Smoked potatoes':{ing:'2 lb potatoes · olive oil · 3 tbsp butter · rub or salt+pepper',steps:'Toss in oil + seasoning, smoke 275–300°F ~1.5–2 hrs till a knife slides in. Toss with butter to finish.'}
+};
+function renderSidesGuide(app){
+  const cards=Object.entries(SIDE_RECIPES).map(([name,r])=>`<section class="card"><div class="sec-head"><span class="sec-title">${esc(name)}</span></div><div class="fields" style="padding:2px 2px 4px"><div class="cc-meta" style="margin-bottom:6px"><b>Grab:</b> ${esc(r.ing)}</div><div>${esc(r.steps)}</div></div></section>`).join('');
+  app.innerHTML=`<div class="detail-h"><h2>🌽 Sides — quick recipes</h2></div>
+    <p class="hint" style="margin:-2px 0 12px">The top BBQ sides with a fast, no-fuss recipe each. Exact ingredients so you can just cook.</p>
+    ${cards}
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner"><button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button><button class="btn-primary" style="flex:1" onclick="go('/')">Done</button></div></div>`;
+}
+
 // ---- Shopping list from a recipe ----
 const SHOP_INGREDIENTS={
   'Smoked mac & cheese':['Elbow macaroni','Sharp cheddar','Gruyère or Monterey Jack','Cream cheese','Whole milk','Butter'],
