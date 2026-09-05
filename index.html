@@ -517,6 +517,8 @@ function render() {
   if (h === '/recipe-new') return renderRecipeForm(app, blankRecipe(), true);
   const mRE = h.match(/^\/recipe-edit\/(.+)$/); if (mRE) { const r = getRecipe(mRE[1]); return r && !r.builtin ? renderRecipeForm(app, r, false) : renderRecipes(app); }
   if (h === '/sides-guide') return renderSidesGuide(app);
+  if (h === '/doneness') return renderDoneness(app);
+  if (h === '/crowd') return renderCrowd(app);
   const mSH = h.match(/^\/shop\/(.+)$/); if (mSH) { const r = getRecipe(mSH[1]); return r ? renderShoppingList(app, r) : renderRecipes(app); }
   const mR = h.match(/^\/recipe\/(.+)$/); if (mR) { const r = getRecipe(mR[1]); return r ? renderRecipeDetail(app, r) : renderRecipes(app); }
   renderList(app);
@@ -574,6 +576,8 @@ function renderRecipes(app){
       <div style="flex:1"><b>Pit Recipes</b> <span class="hint">tap one to cook it or read the play</span></div>
       <button class="btn-primary" onclick="go('/recipe-new')">＋ New recipe</button>
       <button class="btn-ghost btn-sm" onclick="go('/sides-guide')">🌽 Sides</button>
+      <button class="btn-ghost btn-sm" onclick="go('/doneness')">🌡️ Temps</button>
+      <button class="btn-ghost btn-sm" onclick="go('/crowd')">👥 How much</button>
       <button class="btn-ghost btn-sm" onclick="go('/')">← Cooks</button>
     </div>
     ${mine.length?`<div class="cc-meta" style="margin:4px 0 8px">Your recipes</div>${mine.map(card).join('')}<div style="height:14px"></div>`:''}
@@ -620,6 +624,66 @@ function renderSidesGuide(app){
     ${cards}
     <div style="height:16px"></div>
     <div class="foot-actions"><div class="inner"><button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button><button class="btn-primary" style="flex:1" onclick="go('/')">Done</button></div></div>`;
+}
+
+// ---- Doneness cheat card ----
+const DONENESS=[
+  ['Brisket','203°F','Probe-tender in the thickest flat; rest 1–2 hrs.'],
+  ['Pork butt / pulled pork','203°F','Bone pulls clean; rest 1 hr, then shred.'],
+  ['Pork ribs','200–203°F','Bend test — cracks on the surface, ~2 bones tear clean.'],
+  ['Beef short ribs','203°F','Jiggly + probe-tender; long rest.'],
+  ['Tri-tip','130°F','Pull ~125°F, sear, rest to 130 (med-rare). Slice against the grain.'],
+  ['Steak','130–135°F','Med-rare. Pull 5° early, rest.'],
+  ['Chicken breast / white','165°F','Juices run clear.'],
+  ['Chicken thighs / dark','175–185°F','Higher than white — renders tender, never rubbery.'],
+  ['Chicken wings','175–185°F','Cook hot for crisp skin.'],
+  ['Whole chicken','165° breast / 175° thigh','Go by the lowest reading.'],
+  ['Turkey breast','160°F','Carryover finishes to 165; rest 20 min.'],
+  ['Pork chops / tenderloin','145°F','Plus a 3-min rest (USDA).'],
+  ['Burgers','160°F','Ground meat — cook through.'],
+  ['Sausage','160°F','Snappy, juices clear.'],
+  ['Pork belly burnt ends','~200°F','Tender + tacky, not mushy.'],
+  ['Salmon / fish','130–135°F','Flakes but still moist.']
+];
+function renderDoneness(app){
+  const rows=DONENESS.map(([n,t,note])=>`<tr><td>${esc(n)}</td><td style="white-space:nowrap;color:var(--ember-bright);font-weight:600">${esc(t)}</td><td class="cc-meta">${esc(note)}</td></tr>`).join('');
+  app.innerHTML=`<div class="detail-h"><h2>🌡️ Doneness — pull temps</h2></div>
+    <p class="hint" style="margin:-2px 0 12px">Pull temperatures for the pit. Always probe the thickest part; trust the lowest reading.</p>
+    <section class="card"><div class="fields" style="padding:2px"><table><thead><tr><th>Cook</th><th>Pull at</th><th>Notes</th></tr></thead><tbody>${rows}</tbody></table></div></section>
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner"><button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button><button class="btn-primary" style="flex:1" onclick="go('/')">Done</button></div></div>`;
+}
+
+// ---- Crowd calculator ----
+const CROWD=[
+  ['Brisket (packer)',1.0,'~50% yield after trim + cook'],
+  ['Pork butt',1.0,'~50% yield; pulled pork'],
+  ['Ribs (spare/St. Louis)',1.0,'~1 lb raw pp ≈ ⅓–½ rack'],
+  ['Chicken thighs',0.5,'~2 boneless thighs pp'],
+  ['Whole chicken',1.0,'~¼ bird pp'],
+  ['Beef short ribs',1.25,'bone-heavy, buy extra'],
+  ['Pulled/sliced (mixed plate)',0.5,'½ lb cooked pp'],
+  ['Sides (each)',0.33,'~⅓ lb pp per side']
+];
+function crowdCalc(){
+  const el=document.getElementById('crowdN'); const n=Math.max(1,Math.min(200,parseInt(el&&el.value,10)||0));
+  const out=document.getElementById('crowdOut'); if(!out)return;
+  if(!n){ out.innerHTML='<p class="hint">Enter how many people.</p>'; return; }
+  out.innerHTML=`<table><thead><tr><th>Buy (raw)</th><th>Amount</th><th>Why</th></tr></thead><tbody>${
+    CROWD.map(([name,per,note])=>`<tr><td>${esc(name)}</td><td style="white-space:nowrap;color:var(--ember-bright);font-weight:600">${(n*per).toFixed(1)} lb</td><td class="cc-meta">${esc(note)}</td></tr>`).join('')
+  }</tbody></table><p class="hint" style="margin-top:8px">Pick the row(s) for your cook. Big smokes lose ~40–50% — that's already baked in. Round up; leftovers are the point.</p>`;
+}
+function renderCrowd(app){
+  app.innerHTML=`<div class="detail-h"><h2>👥 How much to buy</h2></div>
+    <p class="hint" style="margin:-2px 0 12px">Raw weight to buy per protein, accounting for trim + cook loss.</p>
+    <section class="card"><div class="fields">
+      <label class="fl" for="crowdN">How many people?</label>
+      <input class="wiz-input" id="crowdN" type="number" min="1" max="200" value="8" inputmode="numeric" oninput="crowdCalc()" style="max-width:160px">
+    </div></section>
+    <section class="card"><div class="fields" style="padding:2px" id="crowdOut"></div></section>
+    <div style="height:16px"></div>
+    <div class="foot-actions"><div class="inner"><button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button><button class="btn-primary" style="flex:1" onclick="go('/')">Done</button></div></div>`;
+  crowdCalc();
 }
 
 // ---- Shopping list from a recipe ----
@@ -732,6 +796,18 @@ function cookFromRecipe(id){
   const s=c.sides[0]; s.name=r.cooker||''; s.targetTemp=r.targetTemp||''; s.wood=r.wood||''; s.pulledTemp=r.pullTemp||'';
   if(Array.isArray(r.steps)&&r.steps.length) c.prep=r.steps.join(' · ');
   const db=load(); db.cooks.push(c); if(save(db)){ toast('Cook started from recipe 🔥'); go('/cook/'+c.id); }
+}
+function cookAgain(id){
+  const src=getCook(id); if(!src){ toast('Cook not found'); return; }
+  const c=blankCook(src.mode==='compare'?'compare':'single');
+  c.kind=src.kind||'meal';
+  c.protein=src.protein||''; c.plan=src.plan||''; c.prep=src.prep||''; c.prepSel=(src.prepSel||[]).slice();
+  c.sidesPlan=src.sidesPlan||''; c.saucePlan=src.saucePlan||'';
+  const now=new Date(), p=x=>String(x).padStart(2,'0'); c.date=`${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())}`;
+  // carry the cooker setup forward, drop the results
+  c.sides=(src.sides||[]).map(s=>{ const ns=newSide(s.name||''); ns.targetTemp=s.targetTemp||''; ns.wood=s.wood||''; ns.fuel=s.fuel||''; ns.pulledTemp=s.pulledTemp||''; return ns; });
+  if(!c.sides.length) c.sides=[newSide('')];
+  const db=load(); db.cooks.push(c); if(save(db)){ toast('Cloned — logging a fresh cook 🔥'); go('/cook/'+c.id); }
 }
 function saveCookAsRecipe(cookId){
   const c=getCook(cookId); if(!c){ toast('Cook not found'); return; }
@@ -1165,7 +1241,8 @@ function renderDetail(app, c) {
     <div style="height:16px"></div>
     <div class="foot-actions"><div class="inner">
       <button class="btn-ghost btn-sm" onclick="go('/')">← All</button>
-      <button style="flex:1" onclick="showMarkdown(${jsArg(c.id)})">Copy markdown</button>
+      <button class="btn-primary" style="flex:1" onclick="cookAgain(${jsArg(c.id)})">🔁 Cook it again</button>
+      <button onclick="showMarkdown(${jsArg(c.id)})">Copy MD</button>
       <button onclick="go('/edit/'+${jsArg(c.id)})">Edit</button>
       <button class="btn-danger" onclick="delCook(${jsArg(c.id)})">Delete</button>
     </div></div>
