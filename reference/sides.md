@@ -79,6 +79,125 @@ The kind that sit in the smoker soaking up bacon fat and drippings.
 
 ---
 
+## Southern Collard Greens
+Low-and-slow greens with smoky pork. A BBQ-plate staple.
+
+| Ingredient | Amount |
+|---|---|
+| Collard greens, stemmed + chopped | 2 lb (2 bunches) |
+| Thick-cut bacon or a smoked ham hock | 6 slices / 1 hock |
+| Yellow onion, diced | 1 |
+| Garlic, minced | 4 cloves |
+| Low-sodium chicken broth | 4 cups |
+| Apple cider vinegar | 2 tbsp |
+| Brown sugar | 1 tbsp |
+| Red pepper flakes | 1 tsp |
+| Kosher salt + black pepper | to taste |
+
+**Method:** render the **thick-cut bacon** (or brown the ham hock) in a Dutch oven, soften the **yellow onion + garlic**. Add greens, broth, vinegar, sugar, pepper flakes. Simmer **covered, low, 1.5–2 hrs** until silky. Serve with a splash of the "pot likker."
+
+---
+
+## Fried Okra
+Crispy Southern classic. Fry inside, don't smoke.
+
+| Ingredient | Amount |
+|---|---|
+| Fresh okra, sliced ½" | 1 lb |
+| Buttermilk | 1 cup |
+| Yellow cornmeal | 1 cup |
+| All-purpose flour | ½ cup |
+| Kosher salt + black pepper | to taste |
+| Peanut oil (for frying) | as needed |
+
+**Method:** soak okra in **buttermilk** 10 min. Toss in **cornmeal + flour + salt + pepper**. Fry in **peanut oil at 350°F** in batches ~3–4 min until golden. Drain, salt right away.
+
+---
+
+## Hush Puppies
+Fried cornmeal bites. Non-negotiable next to fish or pulled pork.
+
+| Ingredient | Amount |
+|---|---|
+| Yellow cornmeal | 1 cup |
+| All-purpose flour | ½ cup |
+| Baking powder | 1 tsp |
+| Sugar | 1 tbsp |
+| Yellow onion, grated | ¼ cup |
+| Buttermilk | ¾ cup |
+| Egg | 1 |
+| Kosher salt | 1 tsp |
+| Peanut oil (for frying) | as needed |
+
+**Method:** mix dry, then stir in **grated yellow onion, buttermilk, egg**. Rest 10 min. Drop tablespoon scoops into **350°F peanut oil**, fry ~3 min until deep golden, turning. Drain.
+
+---
+
+## Smoked Corn on the Cob
+Set it right on the grate — smoke loves corn.
+
+| Ingredient | Amount |
+|---|---|
+| Corn, husked | 6 ears |
+| Salted butter, melted | 4 tbsp |
+| Your BBQ rub | 1 tbsp |
+| Cotija or parmesan (optional) | to finish |
+
+**Method:** brush corn with **melted butter**, dust with rub. Smoke at **275–300°F ~45 min**, turning, until tender with a little char. Finish with more butter + cheese.
+
+---
+
+## Skillet Cornbread
+Cast-iron cornbread with a crackly crust.
+
+| Ingredient | Amount |
+|---|---|
+| Yellow cornmeal | 1½ cups |
+| All-purpose flour | 1 cup |
+| Baking powder | 1 tbsp |
+| Sugar | 2 tbsp |
+| Buttermilk | 1½ cups |
+| Eggs | 2 |
+| Salted butter, melted | 6 tbsp |
+| Kosher salt | 1 tsp |
+
+**Method:** heat a **cast-iron skillet** with a pat of butter in a **425°F** oven. Mix dry, whisk in buttermilk + eggs + melted butter. Pour into the hot skillet (it should sizzle), bake **20–25 min** until golden. Jalapeño version: fold in 1 diced jalapeño + 1 cup shredded cheddar.
+
+---
+
+## Mustard Potato Salad
+Tangy, yellow, picnic-style.
+
+| Ingredient | Amount |
+|---|---|
+| Yukon gold potatoes, cubed | 2 lb |
+| Mayonnaise (Duke's) | ¾ cup |
+| Yellow mustard | 3 tbsp |
+| Dill pickle relish | 2 tbsp |
+| Yellow onion, minced | ¼ cup |
+| Eggs, hard-boiled + chopped | 3 |
+| Apple cider vinegar | 1 tbsp |
+| Paprika + kosher salt + black pepper | to taste |
+
+**Method:** boil **Yukon golds** in salted water till fork-tender, drain, cool. Splash with vinegar while warm. Fold in everything else. Chill 1 hr+. Dust paprika on top.
+
+---
+
+## Texas Toast
+The griddled garlic bread that soaks up sauce.
+
+| Ingredient | Amount |
+|---|---|
+| Thick-cut white bread | 8 slices |
+| Salted butter, softened | 6 tbsp |
+| Garlic, minced | 3 cloves |
+| Parmesan, grated | ¼ cup |
+| Fresh parsley, chopped | 1 tbsp |
+
+**Method:** mash **softened butter + garlic + parmesan + parsley**. Spread on both sides of the **thick-cut bread**. Griddle in a cast-iron pan over medium until golden both sides.
+
+---
+
 ## Notes
 - **Cast iron or foil pans** on the smoker — nothing you care about scrubbing.
 - **Under the meat** = free flavor for beans and greens.
