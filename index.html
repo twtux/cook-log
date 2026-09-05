@@ -797,7 +797,7 @@ function cookGroups(list){
 }
 function cookCard(c) {
   const cookers = c.sides.map(s => s.name).filter(Boolean).join('  vs  ') || 'Cook';
-  const title = c.title || c.protein || cookers;
+  const title = c.title || c.protein || (c.sidesPlan||'').split(/\s*·\s*/)[0] || cookers;
   const best = c.sides.map(avgScore);
   const showScore = Math.max(...best) > 0;
   const scoreBlock = c.mode === 'compare'
@@ -902,7 +902,7 @@ function wizValidate(){
     if(missing>=0){ toast(wiz.cook.sides.length>1?`Choose cooker ${String.fromCharCode(65+missing)}`:'Choose a cooker first'); const el=document.getElementById('ck'+missing); if(el)el.focus(); return false; }
     if(wiz.cook.sides.length>1&&wiz.cook.sides[0].name===wiz.cook.sides[1].name){ toast('Choose two different cookers'); return false; }
   }
-  if(wiz.step===2&&!wiz.cook.protein.trim()){ toast('Choose a meat or tap “Give me a cook idea”'); const el=document.getElementById('wz'); if(el)el.focus(); return false; }
+  // Meat is optional — you can log a sides-only cook (e.g. just grilled corn). Finish still checks something got entered.
   return true;
 }
 function wizNext(){ wizCollect(); if(!wizValidate())return; wiz.step++; renderWizard(document.getElementById('app')); }
@@ -911,7 +911,7 @@ function wizBack(){ wizCollect(); wiz.step = Math.max(0, wiz.step-1); renderWiza
 function wizFinish(){
   wizCollect();
   if(wiz.cook.sides.some(s=>!s.name.trim())){ wiz.step=1; toast('Choose your cooker before starting'); renderWizard(document.getElementById('app')); return; }
-  if(!wiz.cook.protein.trim()){ wiz.step=2; toast('Choose a meat before starting'); renderWizard(document.getElementById('app')); return; }
+  if(!wiz.cook.protein.trim() && !(wiz.cook.sidesPlan||'').trim() && !(wiz.cook.title||'').trim()){ wiz.step=2; toast('Add a meat — or a side/dish if there is no meat'); renderWizard(document.getElementById('app')); return; }
   const de=document.getElementById('wzdate');
   wiz.cook.date = (de&&de.value) || wiz.cook.date || nowLocal();
   const db=load(); db.cooks.push(wiz.cook); save(db); const id=wiz.cook.id; wiz=null; toast('Cook started 🔥'); go('/cook/'+id);
@@ -966,7 +966,7 @@ function renderWizard(app){
       <button class="btn-primary" type="button" onclick="suggestMeal()">🔥 ${idea?'Give me another idea':'Give me a cook idea'}</button>
       ${idea?`<div class="idea-card"><b>${esc(idea.protein)}</b><p>${esc(idea.sides)}</p><p>${esc(idea.sauce)}</p></div>`:''}
       ${pastProteins().length?`<div class="chips" style="margin-bottom:10px">${pastProteins().slice(0,10).map((p,idx)=>`<button class="chip${wiz.cook.protein===p?' on':''}" onclick="wizChooseProtein(${idx})">${esc(p)}</button>`).join('')}</div>`:''}
-      <label class="fl" for="wz">Meat &amp; cut <span style="color:var(--ember-bright)">required</span></label>
+      <label class="fl" for="wz">Meat &amp; cut <span class="hint">optional — leave blank for a sides-only cook</span></label>
       <div class="field-row"><input class="wiz-input" id="wz" list="dl_protein" value="${esc(wiz.cook.protein)}" placeholder="e.g. Prime packer brisket" onchange="wizProteinChanged(this.value)" onkeydown="if(event.key==='Enter')wizNext()">${micFor('wz')}</div>
       <div style="margin-top:16px">${menuPicker('sides')}${menuPicker('sauce')}</div>
       <label class="fl" for="wzplan" style="margin-top:16px">Game plan <span class="hint">optional — say it</span></label>
