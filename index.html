@@ -496,6 +496,7 @@ function render() {
   if (h === '/recipes') return renderRecipes(app);
   if (h === '/recipe-new') return renderRecipeForm(app, blankRecipe(), true);
   const mRE = h.match(/^\/recipe-edit\/(.+)$/); if (mRE) { const r = getRecipe(mRE[1]); return r && !r.builtin ? renderRecipeForm(app, r, false) : renderRecipes(app); }
+  const mSH = h.match(/^\/shop\/(.+)$/); if (mSH) { const r = getRecipe(mSH[1]); return r ? renderShoppingList(app, r) : renderRecipes(app); }
   const mR = h.match(/^\/recipe\/(.+)$/); if (mR) { const r = getRecipe(mR[1]); return r ? renderRecipeDetail(app, r) : renderRecipes(app); }
   renderList(app);
 }
@@ -570,8 +571,78 @@ function renderRecipeDetail(app, r){
     <div style="height:16px"></div>
     <div class="foot-actions"><div class="inner">
       <button class="btn-ghost btn-sm" onclick="go('/recipes')">← Recipes</button>
+      <button style="flex:1" onclick="go('/shop/'+${jsArg(r.id)})">🛒 Shopping list</button>
       <button class="btn-primary" style="flex:1" onclick="cookFromRecipe(${jsArg(r.id)})">🔥 Cook this</button>
       ${r.builtin?'':`<button onclick="go('/recipe-edit/'+${jsArg(r.id)})">Edit</button><button class="btn-danger" onclick="delRecipe(${jsArg(r.id)})">Delete</button>`}
+    </div></div>`;
+}
+// ---- Shopping list from a recipe ----
+const SHOP_INGREDIENTS={
+  'Smoked mac & cheese':['Elbow macaroni','Sharp cheddar','Gruyère or Monterey Jack','Cream cheese','Whole milk','Butter'],
+  'Coleslaw':['Bagged coleslaw mix',"Duke's mayo",'Apple cider vinegar','Dijon mustard','Celery seed'],
+  'Vinegar slaw':['Bagged coleslaw mix','Apple cider vinegar','Sugar','Red pepper flakes'],
+  'Sesame slaw':['Bagged coleslaw mix','Rice vinegar','Sesame oil','Soy sauce','Sesame seeds'],
+  'Pit beans':["Canned baked beans (Bush's)",'Thick-cut bacon','Yellow onion','Green bell pepper','Brown sugar','BBQ sauce'],
+  'Smoked baked beans':["Canned baked beans (Bush's)",'Thick-cut bacon','Yellow onion','Green bell pepper','Brown sugar','BBQ sauce'],
+  'Smoked green beans':['Fresh green beans','Thick-cut bacon','Yellow onion','Garlic','Low-sodium chicken broth','Brown sugar'],
+  'Corn on the cob':['Corn','Butter'],'Grilled corn':['Corn','Butter'],
+  'Cornbread':['Cornmeal','Flour','Buttermilk','Eggs','Butter'],
+  'Jalapeño cornbread':['Cornmeal','Flour','Buttermilk','Eggs','Butter','Jalapeño','Cheddar'],
+  'Skillet cornbread':['Cornmeal','Flour','Buttermilk','Eggs','Butter'],
+  'Potato salad':['Yukon gold potatoes',"Duke's mayo",'Yellow mustard','Dill pickle relish','Eggs'],
+  'Mustard potato salad':['Yukon gold potatoes',"Duke's mayo",'Yellow mustard','Dill pickle relish','Eggs'],
+  'Collard greens':['Collard greens','Thick-cut bacon or ham hock','Yellow onion','Garlic','Low-sodium chicken broth'],
+  'Fried okra':['Fresh okra','Buttermilk','Cornmeal','Flour','Peanut oil'],
+  'Hush puppies':['Cornmeal','Flour','Buttermilk','Egg','Yellow onion','Peanut oil'],
+  'Texas toast':['Thick-cut white bread','Butter','Garlic','Parmesan'],
+  'Smoked potatoes':['Potatoes','Olive oil','Butter'],'Smoked mac':['Elbow macaroni','Sharp cheddar','Whole milk','Butter'],
+  'Grilled vegetables':['Assorted vegetables','Olive oil'],'Grilled asparagus':['Asparagus','Olive oil'],'Charred broccolini':['Broccolini','Olive oil'],
+  'Creamy polenta':['Polenta / cornmeal','Butter','Parmesan','Whole milk'],'Sage stuffing muffins':['Stuffing mix','Butter','Fresh sage','Eggs'],
+  'Pickles & onions':['Dill pickles','Red onion'],
+  'Kansas City BBQ sauce':['Ketchup','Brown sugar','Molasses','Apple cider vinegar','Worcestershire'],
+  'Carolina vinegar sauce':['Apple cider vinegar','Red pepper flakes','Louisiana hot sauce','Brown sugar'],
+  'Eastern Carolina vinegar sauce':['Apple cider vinegar','Red pepper flakes','Louisiana hot sauce','Brown sugar'],
+  'Alabama white sauce':["Duke's mayo",'Apple cider vinegar','Prepared horseradish','Dijon mustard','Lemon'],
+  'Mustard BBQ sauce':['Yellow mustard','Apple cider vinegar','Honey','Brown sugar'],'Carolina gold':['Yellow mustard','Apple cider vinegar','Honey','Brown sugar'],
+  'Apple-bourbon BBQ glaze':['BBQ sauce','Apple juice','Bourbon','Brown sugar'],'Hot honey BBQ glaze':['BBQ sauce','Hot honey'],
+  'Espresso BBQ sauce':['Ketchup','Brewed espresso','Brown sugar','Apple cider vinegar'],'Cranberry-chipotle BBQ sauce':['Cranberry sauce','Chipotle in adobo','BBQ sauce'],
+  'Chimichurri':['Fresh parsley','Garlic','Red wine vinegar','Olive oil','Red pepper flakes'],'Red-wine barbecue jus':['Beef broth','Red wine','Butter'],
+  'Texas-style mop sauce':['Beef broth','Apple cider vinegar','Worcestershire'],'Pan drippings':[]
+};
+function shopSplit(s){ return String(s||'').split(/\s*·\s*|\s*,\s*|\n/).map(x=>x.trim()).filter(Boolean); }
+function ingredientsFor(name){ const k=Object.keys(SHOP_INGREDIENTS).find(x=>x.toLowerCase()===name.toLowerCase()); return k?SHOP_INGREDIENTS[k]:[name]; }
+function shoppingSections(r){
+  const seen=new Set(), out=[];
+  const push=(head,items)=>{ const list=[]; items.forEach(it=>{ const t=String(it).trim(), k=t.toLowerCase(); if(t&&!seen.has(k)){ seen.add(k); list.push(t); } }); if(list.length) out.push([head,list]); };
+  if(r.protein) push('Meat',[r.protein]);
+  if(r.wood && r.wood!=='—') push('Wood',[r.wood]);
+  shopSplit(r.sauce).forEach(sc=>push('Sauce — '+sc, ingredientsFor(sc)));
+  shopSplit(r.sides).forEach(sd=>push('Side — '+sd, ingredientsFor(sd)));
+  return out;
+}
+function shoppingText(r){
+  let t='🔥 SHOPPING LIST — '+(r.name||'Cook')+'\n\n';
+  shoppingSections(r).forEach(([head,items])=>{ t+=head.toUpperCase()+'\n'+items.map(i=>'[ ] '+i).join('\n')+'\n\n'; });
+  t+='(Pantry assumed: kosher salt, black pepper, oil, your rubs.)\n';
+  return t;
+}
+function downloadShoppingList(id){ const r=getRecipe(id); if(!r)return; const blob=new Blob([shoppingText(r)],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='shopping-'+(r.name||'cook').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')+'.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),0); toast('Shopping list downloaded 🛒'); }
+function copyShoppingList(id){ const r=getRecipe(id); if(!r)return; const txt=shoppingText(r);
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('Copied 🛒')).catch(()=>toast('Copy failed — long-press to select')); }
+  else { const ta=document.getElementById('shoptext'); if(ta){ ta.select(); try{document.execCommand('copy');toast('Copied 🛒');}catch{toast('Long-press to select');} } } }
+function renderShoppingList(app, r){
+  const secs=shoppingSections(r);
+  app.innerHTML=`
+    <div class="detail-h"><h2>🛒 Shopping list</h2></div>
+    <div class="cc-meta" style="margin-bottom:10px">${esc(r.name||'Cook')}</div>
+    ${secs.map(([head,items])=>`<section class="card"><div class="sec-head"><span class="sec-title">${esc(head)}</span></div><div class="fields"><ul style="list-style:none;padding:0;margin:0">${items.map(i=>`<li style="padding:5px 0">☐ ${esc(i)}</li>`).join('')}</ul></div></section>`).join('')}
+    <p class="hint" style="margin:6px 0 12px">Pantry assumed: kosher salt, black pepper, oil, your rubs.</p>
+    <textarea id="shoptext" style="position:absolute;left:-9999px" aria-hidden="true">${esc(shoppingText(r))}</textarea>
+    <div class="foot-actions"><div class="inner">
+      <button class="btn-ghost btn-sm" onclick="go('/recipe/'+${jsArg(r.id)})">← Recipe</button>
+      <button style="flex:1" onclick="copyShoppingList(${jsArg(r.id)})">📋 Copy</button>
+      <button class="btn-primary" style="flex:1" onclick="downloadShoppingList(${jsArg(r.id)})">⬇ Download</button>
     </div></div>`;
 }
 function renderRecipeForm(app, r, isNew){
