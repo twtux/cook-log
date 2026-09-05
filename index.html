@@ -338,7 +338,7 @@ function normalizeCook(raw,seen=new Set()){
 // ---- learned suggestions (your "inventory" from past cooks) ----
 function distinct(arr){ return [...new Set(arr.map(v=>v==null?'':String(v).trim()).filter(Boolean))]; }
 function pastCookers(){ return distinct([...loadInv().cookers, ...load().cooks.flatMap(c=>c.sides.map(s=>s.name))]); }
-const COMMON_PROTEINS=['Boneless chicken thighs','Bone-in chicken thighs','Chicken wings','Whole chicken (rotisserie)','Pork butt (Boston butt)','St. Louis pork ribs','Baby back ribs','Whole packer brisket','Brisket flat','Beef short ribs','Tri-tip','Pork belly burnt ends','Turkey breast','Salmon fillet'];
+const COMMON_PROTEINS=['Whole packer brisket','Pork butt (Boston butt)','Baby back ribs','St. Louis pork ribs','Boneless chicken thighs','Chicken wings','Whole chicken','Beef short ribs','Pork belly burnt ends','Tri-tip'];
 // Suggest the user's own past proteins first, then fall back to the common list.
 function pastProteins(){ return distinct([...load().cooks.map(c=>c.protein), ...COMMON_PROTEINS]); }
 function pastSide(k){ const inv=loadInv(); const extra=k==='fuel'?inv.fuels:k==='wood'?inv.woods:[]; return distinct([...(extra||[]), ...load().cooks.flatMap(c=>c.sides.map(s=>s[k]))]); }
