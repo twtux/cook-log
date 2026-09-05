@@ -138,7 +138,7 @@ article hr{border:0;border-top:1px solid var(--line);margin:1.4em 0}
 .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .foot{color:var(--muted);font-size:.8rem;margin-top:40px;border-top:1px solid var(--line);padding-top:14px}
 .pill{display:inline-block;background:#2b221b;border:1px solid var(--line);color:var(--muted);font-size:.75rem;padding:2px 9px;border-radius:20px;margin-left:6px}
-.refrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.refrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
 .refcard{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 8px;color:var(--ink);font-weight:600;font-size:.95rem}
 .refcard:hover{border-color:var(--fire);text-decoration:none}
 .refcard span{font-size:1.7rem}
@@ -185,6 +185,7 @@ for (const c of cooks) {
 
 // reference pages
 const REFS = [
+  { file: 'prep-checklist.md', slug: 'prep-checklist', title: 'Prep Checklist', icon: '✅' },
   { file: 'flavor-prep.md', slug: 'flavor-prep', title: 'Flavor Prep', icon: '🧄' },
   { file: 'sauces.md', slug: 'sauces', title: 'Sauces', icon: '🍯' },
   { file: 'sides.md', slug: 'sides', title: 'Sides', icon: '🌽' },
