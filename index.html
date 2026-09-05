@@ -338,7 +338,9 @@ function normalizeCook(raw,seen=new Set()){
 // ---- learned suggestions (your "inventory" from past cooks) ----
 function distinct(arr){ return [...new Set(arr.map(v=>v==null?'':String(v).trim()).filter(Boolean))]; }
 function pastCookers(){ return distinct([...loadInv().cookers, ...load().cooks.flatMap(c=>c.sides.map(s=>s.name))]); }
-function pastProteins(){ return distinct(load().cooks.map(c=>c.protein)); }
+const COMMON_PROTEINS=['Boneless chicken thighs','Bone-in chicken thighs','Chicken wings','Whole chicken (rotisserie)','Pork butt (Boston butt)','St. Louis pork ribs','Baby back ribs','Whole packer brisket','Brisket flat','Beef short ribs','Tri-tip','Pork belly burnt ends','Turkey breast','Salmon fillet'];
+// Suggest the user's own past proteins first, then fall back to the common list.
+function pastProteins(){ return distinct([...load().cooks.map(c=>c.protein), ...COMMON_PROTEINS]); }
 function pastSide(k){ const inv=loadInv(); const extra=k==='fuel'?inv.fuels:k==='wood'?inv.woods:[]; return distinct([...(extra||[]), ...load().cooks.flatMap(c=>c.sides.map(s=>s[k]))]); }
 function pickInto(id,val){ const el=document.getElementById(id); if(el){ el.value=val; el.focus(); } }
 function wizSetCookerIdx(i,ci){ wizSetCooker(i, pastCookers()[ci]); }
@@ -506,6 +508,9 @@ const BUILTIN_RECIPES = [
   { id:'b_chicken', builtin:true, name:'Smoked Chicken Thighs', protein:'Bone-in chicken thighs', cooker:'Any grill/smoker', targetTemp:'325°F', pullTemp:'180°F', estTime:'~1.5 hrs', wood:'Cherry', sides:'Grilled corn · mustard potato salad', sauce:'Alabama white sauce',
     plan:'325°F for bite-through skin; finish at 180–185°F in the thigh.', source:'Pit classic',
     steps:['Trim excess skin/fat; pat dry for crisp skin.','Season under and over the skin.','Cook at 325°F (higher heat = better skin).','Pull at 180–185°F — thighs are forgiving; a little over is fine.','Dunk or drizzle Alabama white sauce at the end.'] },
+  { id:'b_chicken_bl', builtin:true, name:'Boneless Chicken Thighs', protein:'Boneless chicken thighs', cooker:'Any grill/smoker', targetTemp:'300°F', pullTemp:'175–185°F', estTime:'~1 hr', wood:'Cherry / apple', sides:'Smoked green beans · slaw', sauce:'Alabama white or Killer Hogs glaze',
+    plan:'Cheap, fast, forgiving. 300°F, pull at 175–185°F (dark meat renders tender high, never rubbery).', source:'Weeknight go-to',
+    steps:['Trim the big fat pockets off the underside.','Salt 30–60 min ahead (skip the overnight brine — thighs don\'t need it).','Binder + a sweet-savory rub (Killer Hogs works great).','Smoke at 300°F, mild fruit wood (cherry/apple).','Pull at 175–185°F — under 165 leaves dark meat rubbery.','Glaze the last 15 min if you want them sticky.'] },
   { id:'b_tritip', builtin:true, name:'Reverse-Seared Tri-Tip', protein:'Tri-tip roast', cooker:'Smoker + hot grill', targetTemp:'225°F then sear', pullTemp:'120°F then sear to 130°F', estTime:'~1.5 hrs', wood:'Oak', sides:'Smoked potatoes · grilled asparagus', sauce:'Chimichurri',
     plan:'Smoke at 225°F to 115–120°F, then sear hot & fast to a medium-rare finish.', source:'Pit classic',
     steps:['Season with SPG; rest at room temp ~45 min.','Smoke at 225°F to 115–120°F internal.','Rest while you crank the grill screaming hot.','Sear 2–3 min/side to a crust, ~130°F for medium-rare.','Slice against the grain (mind the grain change in a tri-tip).'] },
