@@ -374,6 +374,13 @@ function loadInv(){
         localStorage.setItem(INV_KEY,JSON.stringify(inv));
         localStorage.setItem(HERBES_MIGRATION_KEY,'1');
       }
+      // One-time: fold expanded prep techniques + BBQ side suggestions into existing saved inventories.
+      if(!localStorage.getItem('cl_suggest_migration_20260905')){
+        inv.techniques=distinct([...(inv.techniques||[]), ...INV_DEFAULTS.techniques]);
+        inv.mealSides=distinct([...(inv.mealSides||[]), ...INV_DEFAULTS.mealSides]);
+        localStorage.setItem(INV_KEY,JSON.stringify(inv));
+        localStorage.setItem('cl_suggest_migration_20260905','1');
+      }
       return inv;
     }
   }catch{}
